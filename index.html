@@ -1852,8 +1852,10 @@ window.removeCropAdmin=async function(crop){
 function renderHomeCatNameList(){
   const el=document.getElementById('home-cat-name-list');
   if(!el) return;
-  if(!homeCategories.length){el.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);">No categories yet.</p>';return;}
-  el.innerHTML=[...homeCategories].sort().map(c=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+  // Combine homeCategories + categories from actual entries
+  const cats=[...new Set([...homeCategories,...homeEntries.map(e=>e.category).filter(Boolean)])].sort();
+  if(!cats.length){el.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);">No categories yet. Add a home expense first.</p>';return;}
+  el.innerHTML=cats.map(c=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
     <input type="text" value="${escHtml(c)}" id="hc-${escHtml(c).replace(/\s/g,'_').replace(/\//g,'-')}" style="flex:1;padding:8px 10px;font-size:.9rem;">
     <button onclick="window.renameHomeCat('${escHtml(c)}')" style="padding:8px 12px;font-size:.85rem;white-space:nowrap;">Rename</button>
     <button onclick="window.removeHomeCat('${escHtml(c)}')" class="danger" style="padding:8px 10px;font-size:.85rem;">Remove</button>
@@ -1864,8 +1866,11 @@ window.renameHomeCat=function(oldName){
   if(!input) return;
   const newName=input.value.trim(), msgEl=document.getElementById('home-cat-manage-msg');
   if(!newName||newName===oldName) return;
+  // Update homeEntries
   homeEntries.forEach(e=>{if(e.category===oldName)e.category=newName;});
+  // Update homeCategories array
   const idx=homeCategories.indexOf(oldName); if(idx>-1) homeCategories[idx]=newName;
+  else homeCategories.push(newName);
   renderHomeCatNameList(); renderHomeCatSuggestions();
   msgEl.textContent=`"${oldName}" renamed to "${newName}".`; msgEl.style.color='var(--leaf-dark)'; msgEl.style.display='block';
   setTimeout(()=>msgEl.style.display='none',3000);
@@ -1875,7 +1880,7 @@ window.removeHomeCat=function(cat){
   homeCategories=homeCategories.filter(c=>c!==cat);
   renderHomeCatNameList(); renderHomeCatSuggestions();
   const msgEl=document.getElementById('home-cat-manage-msg');
-  msgEl.textContent=`"${cat}" removed.`; msgEl.style.color='var(--leaf-dark)'; msgEl.style.display='block';
+  msgEl.textContent=`"${cat}" removed from suggestions.`; msgEl.style.color='var(--leaf-dark)'; msgEl.style.display='block';
   setTimeout(()=>msgEl.style.display='none',3000);
 };
 

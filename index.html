@@ -943,6 +943,12 @@ function launchApp(){
     showSetupScreen();
     return;
   }
+  // Non-admin with no URL — show a message
+  if(!isAdmin && (!scriptUrl||!scriptToken)){
+    showConnectFailed('This device is not set up yet. Ask Arjun to set it up first.');
+    showLanding();
+    return;
+  }
   showLanding();
   if(pendingSheetData){ applySheetData(pendingSheetData); pendingSheetData=null; hideConnecting(); setSyncNote('Up to date');  }
   else { loadFromSheet(); }
@@ -2006,7 +2012,7 @@ if('serviceWorker' in navigator){
 
 // ===================== HOME SECTION =====================
 let homeEntries = [];
-let homeCategories = ['Groceries','Vegetables & fruits','Milk & dairy','Electricity','Water','Phone/internet','Gas/LPG','EMI','Loan payment','Insurance','Medical/doctor','Medicines','Car fuel','Car service/repair','Car insurance','Car EMI','Parking/toll','Education','Clothing','Repairs/maintenance','Other'];
+let homeCategories = [];
 let currentHomeTab = 'home-summary';
 
 function renderHomeCatSuggestions(){

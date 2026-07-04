@@ -1,0 +1,2190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VAYAL</title>
+<meta name="theme-color" content="#3d2f24">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="VAYAL">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" id="pwa-manifest">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+:root{
+  --soil:#3d2f24; --soil-light:#6b5544;
+  --cream:#f7f2e9; --cream-dark:#ece3d2;
+  --leaf:#4a6741; --leaf-dark:#34492e;
+  --berry:#8c3a2b; --berry-light:#f0ddd6;
+  --gold:#8c6a2b;
+  --border:#d8cdb8; --text:#2b2118; --text-muted:#6b6052; --white:#fffdf9;
+}
+*{box-sizing:border-box;}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:var(--text);line-height:1.5;}
+
+/* ---- Login ---- */
+#login-screen{position:fixed;inset:0;background:var(--soil);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;}
+#login-screen.hidden{display:none;}
+
+/* Background pattern — subtle leaf/grid texture using CSS */
+#login-bg{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:28px 28px;}
+
+/* Decorative top band */
+#login-top-band{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),var(--gold),var(--leaf-dark));}
+
+.login-box{
+  position:relative;z-index:1;
+  background:var(--white);border-radius:20px;padding:2.25rem 2rem;
+  width:calc(100% - 2rem);max-width:360px;
+  box-shadow:0 24px 64px rgba(0,0,0,.35);
+}
+
+/* Emblem / icon area */
+.login-emblem{
+  width:68px;height:68px;border-radius:50%;
+  background:linear-gradient(135deg,var(--leaf),var(--leaf-dark));
+  display:flex;align-items:center;justify-content:center;
+  font-size:2rem;margin:0 auto 1.25rem;
+  box-shadow:0 4px 16px rgba(52,73,46,.35);
+}
+
+.login-box h1{font-size:2rem;margin:0 0 3px;color:var(--soil);font-weight:800;text-align:center;letter-spacing:6px;}
+.login-tagline{font-size:.8rem;color:var(--text-muted);margin:0 0 1.6rem;text-align:center;letter-spacing:.3px;}
+.login-box .sub{font-size:.82rem;color:var(--text-muted);margin-bottom:1.25rem;text-align:center;}
+
+/* Divider line */
+.login-divider{border:none;border-top:1px solid var(--border);margin:1.25rem 0;}
+
+/* Footer note */
+.login-footer{font-size:.72rem;color:rgba(255,255,255,.35);text-align:center;margin-top:1rem;position:relative;z-index:1;letter-spacing:.2px;}
+
+/* ---- Header ---- */
+header{
+  background:linear-gradient(135deg,var(--soil) 0%,#2a1f17 100%);
+  color:var(--cream);padding:.75rem 1rem;
+  display:flex;align-items:center;justify-content:space-between;
+  border-bottom:3px solid var(--leaf);
+  box-shadow:0 2px 12px rgba(0,0,0,.25);
+  position:relative;
+}
+header h1{margin:0;font-size:1.1rem;font-weight:800;letter-spacing:4px;}
+.hdr-brand{display:flex;align-items:center;gap:8px;}
+.hdr-icon{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,var(--leaf),var(--leaf-dark));display:flex;align-items:center;justify-content:center;font-size:.9rem;flex-shrink:0;}
+header .sub{font-size:.65rem;color:var(--cream-dark);opacity:.7;margin-top:1px;letter-spacing:.2px;}
+.hdr-user{font-size:.82rem;color:var(--cream-dark);font-weight:600;}
+
+/* ---- Layout ---- */
+body{background:#eee8db;}
+main{max-width:960px;margin:0 auto;padding:1.5rem;}
+.status-bar{
+  background:var(--white);border:1px solid var(--border);border-radius:10px;
+  padding:10px 16px;margin-bottom:1.25rem;font-size:.82rem;color:var(--text-muted);
+  display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;
+  box-shadow:0 1px 4px rgba(0,0,0,.06);
+}
+.status-bar strong{color:var(--text);}
+
+/* ---- Tabs ---- */
+.tabs{display:flex;gap:4px;margin-bottom:1.25rem;border-bottom:2px solid var(--border);overflow-x:auto;background:var(--white);border-radius:12px 12px 0 0;padding:4px 4px 0;box-shadow:0 1px 4px rgba(0,0,0,.06);}
+.tab{background:none;border:none;padding:10px 16px;font-size:.9rem;cursor:pointer;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;border-radius:8px 8px 0 0;transition:background .15s,color .15s;}
+.tab:hover{background:var(--cream);color:var(--text);}
+.tab.active{color:var(--leaf-dark);border-bottom-color:var(--leaf);font-weight:700;background:var(--cream);}
+.view{display:none;}.view.active{display:block;}
+
+/* ---- Cards ---- */
+.card{
+  background:var(--white);border:1px solid var(--border);border-radius:14px;padding:1.25rem;margin-bottom:1rem;
+  box-shadow:0 2px 8px rgba(61,47,36,.06);
+  transition:box-shadow .2s;
+}
+h2.section-title{font-size:1rem;font-weight:700;margin:0 0 12px;color:var(--soil);display:flex;align-items:center;gap:6px;}
+
+/* ---- Stat cards ---- */
+.stats-grid{display:grid;gap:12px;margin-bottom:1rem;}
+.stat-card{
+  background:var(--white);border:1px solid var(--border);border-radius:12px;padding:16px;
+  box-shadow:0 2px 8px rgba(61,47,36,.06);
+  transition:transform .15s,box-shadow .15s;
+}
+.stat-card:hover{transform:translateY(-1px);box-shadow:0 4px 14px rgba(61,47,36,.1);}
+.stat-card .label{font-size:.7rem;color:var(--text-muted);margin:0 0 6px;text-transform:uppercase;letter-spacing:.6px;}
+.stat-card .value{font-size:1.2rem;font-weight:700;margin:0;color:var(--soil);}
+.stat-card.wages .value{color:var(--berry);}
+.stat-card.income .value{color:var(--leaf-dark);}
+.stat-card.net-pos{border-left:4px solid var(--leaf);}.stat-card.net-pos .value{color:var(--leaf-dark);}
+.stat-card.net-neg{border-left:4px solid var(--berry);}.stat-card.net-neg .value{color:var(--berry);}
+.stat-card.total-exp{border-left:4px solid var(--soil-light);}.stat-card.total-exp .value{color:var(--soil);}
+
+/* ---- P&L ---- */
+.pnl-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem;}
+.pnl-row:last-child{border-bottom:none;}
+.pnl-row.indent{padding-left:16px;color:var(--text-muted);font-size:.85rem;}
+.pnl-row.subtotal{font-weight:700;border-top:1px solid var(--border);border-bottom:none;padding-top:10px;margin-top:2px;}
+.pnl-row.net{font-size:1.05rem;font-weight:700;border-top:2px solid var(--border);border-bottom:none;padding-top:12px;margin-top:4px;}
+.pnl-pos{color:var(--leaf-dark);}
+.pnl-neg{color:var(--berry);}
+
+/* ---- Forms ---- */
+.field{margin-bottom:12px;}
+label{display:block;font-size:.8rem;color:var(--text-muted);margin-bottom:4px;}
+input,select,button{font-family:inherit;font-size:.95rem;}
+input[type="text"],input[type="number"],input[type="date"],input[type="password"],select{
+  width:100%;padding:9px 10px;border:1px solid var(--border);border-radius:8px;background:var(--white);color:var(--text);}
+input:focus,select:focus{outline:none;border-color:var(--leaf);box-shadow:0 0 0 3px rgba(74,103,65,.15);}
+button{cursor:pointer;border-radius:8px;border:1px solid var(--border);background:var(--white);color:var(--text);padding:9px 14px;transition:background .15s;}
+button:hover{background:var(--cream-dark);}
+button.primary{background:var(--leaf);color:var(--white);border-color:var(--leaf);font-weight:600;}
+button.primary:hover{background:var(--leaf-dark);}
+button.ghost{background:transparent;border-color:rgba(255,255,255,.4);color:var(--cream);}
+button.ghost:hover{background:rgba(255,255,255,.12);}
+button.danger{background:var(--berry-light);color:var(--berry);border-color:var(--berry);}
+button.danger:hover{background:var(--berry);color:var(--white);}
+
+/* ---- Toggle buttons (type / sub-type) ---- */
+.toggle-group{display:flex;gap:6px;margin-bottom:1rem;flex-wrap:wrap;}
+.toggle-group button{flex:1;padding:8px 6px;font-size:.85rem;min-width:80px;}
+.toggle-group button.active{background:var(--berry-light);border-color:var(--berry);color:var(--berry);font-weight:600;}
+
+/* ---- Filters ---- */
+.filters{display:flex;gap:10px;flex-wrap:wrap;}
+.filters>div{flex:1;min-width:130px;}
+
+/* ---- Log ---- */
+.row-table{display:flex;flex-direction:column;}
+.entry-row{display:flex;justify-content:space-between;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border);gap:10px;}
+.entry-row:last-child{border-bottom:none;}
+.entry-title{font-weight:600;font-size:.92rem;margin:0;}
+.entry-meta{font-size:.78rem;color:var(--text-muted);margin:2px 0 0;}
+.entry-amount{font-weight:700;white-space:nowrap;}
+.entry-amount.expense{color:var(--soil);}
+.entry-amount.wage{color:var(--soil);}
+.entry-amount.income{color:var(--leaf-dark);}
+.entry-amount.advance{color:var(--berry);}
+.del-btn{border:none;background:none;color:var(--text-muted);padding:4px 6px;font-size:.85rem;border-radius:4px;}
+.del-btn:hover{color:var(--berry);background:var(--berry-light);}
+.empty-state{text-align:center;color:var(--text-muted);padding:2.5rem 1rem;font-size:.9rem;}
+.cat-row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem;}
+.cat-row:last-child{border-bottom:none;}
+
+/* ---- Worker checklist ---- */
+.worker-item{display:flex;align-items:center;gap:10px;padding:9px 12px;background:var(--cream);border:1px solid var(--border);border-radius:8px;margin-bottom:6px;transition:background .1s;}
+.worker-item.selected{background:var(--berry-light);border-color:var(--berry);}
+.worker-item input[type="checkbox"]{width:18px;height:18px;cursor:pointer;accent-color:var(--berry);flex-shrink:0;}
+.worker-item .ww-name{flex:1;font-size:.9rem;font-weight:500;cursor:pointer;}
+.worker-item input[type="number"]{width:120px;padding:6px 8px;font-size:.9rem;border:1px solid var(--border);border-radius:6px;}
+
+/* ---- Crop chips ---- */
+.crop-chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;}
+.crop-chip{display:flex;align-items:center;gap:6px;background:var(--cream-dark);border-radius:20px;padding:5px 6px 5px 12px;font-size:.82rem;}
+.crop-chip button{border:none;background:none;padding:2px 6px;border-radius:50%;color:var(--text-muted);font-size:.85rem;line-height:1;}
+.crop-chip button:hover{background:var(--berry-light);color:var(--berry);}
+.add-crop-row{display:flex;gap:8px;margin-top:10px;}
+.add-crop-row input{flex:1;}
+
+/* ---- Misc ---- */
+.save-msg{font-size:.85rem;margin-top:10px;display:none;font-weight:600;}
+.instructions{font-size:.85rem;color:var(--text-muted);}
+code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:ui-monospace,monospace;font-size:.85em;}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin-bottom:10px;font-size:12px;color:var(--text-muted);}
+.legend span{display:flex;align-items:center;gap:5px;}
+.legend-dot{width:10px;height:10px;border-radius:2px;}
+
+/* ---- User admin table ---- */
+.user-table{width:100%;border-collapse:collapse;font-size:.9rem;}
+.user-table th{text-align:left;padding:8px 10px;border-bottom:2px solid var(--border);color:var(--text-muted);font-size:.8rem;text-transform:uppercase;}
+.user-table td{padding:9px 10px;border-bottom:1px solid var(--border);}
+.user-table tr:last-child td{border-bottom:none;}
+
+/* ---- Overlays ---- */
+.overlay-wrap{position:fixed;inset:0;background:rgba(43,33,24,.6);display:flex;align-items:flex-start;justify-content:center;z-index:500;overflow-y:auto;padding:20px;}
+.overlay-wrap.hidden{display:none;}
+.overlay-box{background:var(--white);border-radius:14px;padding:1.5rem;width:100%;max-width:480px;margin:auto;}
+
+/* ---- Review overlay ---- */
+#review-overlay{
+  position:fixed;inset:0;
+  background:rgba(43,33,24,.7);
+  z-index:300;display:none;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(2px);
+  padding:1rem;
+}
+#review-overlay.active{display:flex;}
+#review-card{
+  background:var(--white);
+  border-radius:16px;
+  padding:1.5rem;
+  width:100%;max-width:440px;
+  box-shadow:0 24px 60px rgba(0,0,0,.35);
+  animation:fadeScale .2s ease-out;
+}
+@keyframes fadeScale{from{opacity:0;transform:scale(.95);}to{opacity:1;transform:scale(1);}}
+#review-card h3{font-size:1rem;font-weight:700;color:var(--soil);margin:0 0 14px;}
+.review-row{display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);font-size:.88rem;gap:12px;}
+.review-row:last-of-type{border-bottom:none;}
+.review-label{color:var(--text-muted);flex-shrink:0;}
+.review-value{font-weight:600;color:var(--text);text-align:right;}
+.review-amount{font-size:1.2rem;font-weight:700;color:var(--leaf-dark);}
+.review-actions{display:flex;gap:10px;margin-top:1.25rem;}
+.review-actions button{flex:1;padding:12px;font-size:.95rem;font-weight:600;border-radius:10px;}
+
+#saving-overlay{
+  position:fixed;inset:0;
+  background:rgba(43,33,24,.92);
+  z-index:400;display:none;
+  align-items:center;justify-content:center;
+  backdrop-filter:blur(3px);
+}
+#saving-overlay.active{display:flex;}
+#saving-card{
+  background:var(--white);
+  border-radius:16px;
+  padding:2rem 2.5rem;
+  text-align:center;
+  box-shadow:0 24px 60px rgba(0,0,0,.4);
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  min-width:220px;
+}
+#saving-card .s-spinner{
+  width:44px;height:44px;
+  border:4px solid var(--cream-dark);
+  border-top-color:var(--leaf);
+  border-radius:50%;
+  animation:spin .8s linear infinite;
+}
+#saving-card .s-title{font-size:1rem;font-weight:700;color:var(--soil);margin:0;}
+#saving-card .s-sub{font-size:.8rem;color:var(--text-muted);margin:0;}
+
+.lock-warn{background:#fff3cd;border:1px solid #ffc107;border-radius:10px;padding:12px 16px;margin-bottom:1rem;display:none;}
+.lock-warn p{margin:0;font-size:.9rem;color:#856404;}
+
+/* ---- Connecting overlay ---- */
+@keyframes spin{to{transform:rotate(360deg);}}
+#conn-spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--leaf);border-radius:50%;animation:spin .9s linear infinite;}
+
+/* ---- Mobile ---- */
+@media(max-width:600px){
+  header{padding:.6rem .75rem;}
+  header h1{font-size:.95rem;letter-spacing:3px;}
+  .hdr-brand{gap:6px;}
+  .hdr-icon{width:26px;height:26px;font-size:.8rem;}
+  .stats-grid{grid-template-columns:1fr 1fr!important;}
+  .toggle-group{flex-wrap:wrap;}
+  .toggle-group button{min-width:42%;}
+  .tabs{gap:0;}
+  .tab{padding:10px 10px;font-size:.82rem;}
+  main{padding:1rem;}
+  .login-box{padding:1.5rem;}
+  .overlay-box{padding:1.25rem;}
+  .user-table th,.user-table td{padding:6px 6px;font-size:.8rem;}
+  .worker-item input[type="number"]{width:90px;}
+}
+</style>
+</head>
+<body>
+
+<!-- FIRST TIME SETUP (admin, no URL configured) -->
+<div id="setup-screen" style="display:none;position:fixed;inset:0;background:var(--soil);z-index:999;align-items:center;justify-content:center;padding:1rem;">
+  <div style="background:var(--white);border-radius:20px;padding:2rem;width:100%;max-width:400px;box-shadow:0 24px 60px rgba(0,0,0,.4);">
+    <div style="text-align:center;margin-bottom:1.5rem;">
+      <div style="font-size:1.8rem;margin-bottom:6px;">⚙️</div>
+      <h2 style="margin:0 0 4px;color:var(--soil);font-size:1.1rem;">One-time setup</h2>
+      <p style="font-size:.82rem;color:var(--text-muted);margin:0;">Enter your Google Apps Script details to connect VAYAL to your Google Sheet.</p>
+    </div>
+    <div class="field">
+      <label>Apps Script URL <span style="font-size:.75rem;color:var(--text-muted);">(ends in /exec)</span></label>
+      <input type="text" id="setup-url" placeholder="https://script.google.com/macros/s/.../exec">
+    </div>
+    <div class="field">
+      <label>Secret token <span style="font-size:.75rem;color:var(--text-muted);">(must match your Apps Script)</span></label>
+      <input type="text" id="setup-token" placeholder="e.g. Thenery2026Farm">
+      <p style="font-size:.72rem;color:var(--text-muted);margin:4px 0 0;">Choose any secret word. You'll add this to your Apps Script too.</p>
+    </div>
+    <button class="primary" id="btn-setup-save" style="width:100%;margin-top:4px;">Save & connect</button>
+    <p id="setup-error" style="color:var(--berry);font-size:.82rem;margin-top:10px;display:none;"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1rem 0;">
+    <button id="btn-setup-logout" style="width:100%;background:none;border:none;color:var(--text-muted);font-size:.82rem;cursor:pointer;">Sign out</button>
+  </div>
+</div>
+
+<!-- LOGIN SCREEN -->
+<div id="login-screen">
+  <div id="login-bg"></div>
+  <div id="login-top-band"></div>
+
+  <div class="login-box">
+    <div class="login-emblem">🌿</div>
+    <h1>VAYAL</h1>
+    <p class="login-tagline">Our Farm. Our Home. Our Records.</p>
+    <hr class="login-divider">
+    <p class="sub" id="login-sub">Loading users...</p>
+    <div class="field"><label>Name</label><select id="login-user"></select></div>
+    <div class="field"><label>Password</label>
+      <input type="password" id="login-pass" placeholder="Enter your password">
+    </div>
+    <button class="primary" id="btn-login" style="width:100%;margin-top:8px;padding:11px;font-size:1rem;" disabled>Sign in</button>
+    <p id="login-error" style="color:var(--berry);font-size:.82rem;margin-top:10px;text-align:center;display:none;"></p>
+  </div>
+
+  <p class="login-footer">VAYAL v2.0 &nbsp;·&nbsp; © 2026 Arjun Thenery Manikantan</p>
+</div>
+
+<div id="saving-overlay">
+  <div id="saving-card">
+    <div class="s-spinner" id="saving-card-spinner"></div>
+    <div id="saving-card-icon" style="display:none;font-size:2rem;"></div>
+    <p class="s-title" id="saving-card-title">Saving...</p>
+    <p class="s-sub" id="saving-card-sub">Syncing with Google Sheet</p>
+  </div>
+</div>
+
+<!-- Review before save overlay -->
+<div id="review-overlay">
+  <div id="review-card">
+    <h3 id="review-title">📋 Review before saving</h3>
+    <div id="review-rows"></div>
+    <div class="review-actions">
+      <button id="review-cancel" style="background:var(--cream);border:1px solid var(--border);color:var(--text);">✏️ Edit</button>
+      <button id="review-confirm" class="primary">✓ Confirm & Save</button>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN APP -->
+<div id="app" style="display:none;">
+
+<!-- Landing screen: choose Farm or Home -->
+<div id="landing-screen" style="display:none;min-height:100vh;background:var(--cream);flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+  <div style="display:flex;flex-direction:column;align-items:center;text-align:center;margin-bottom:2.5rem;">
+    <div style="font-size:2rem;font-weight:800;letter-spacing:4px;color:var(--soil);">VAYAL</div>
+    <div style="font-size:.85rem;color:var(--text-muted);margin-top:4px;">Our Farm. Our Home. Our Records.</div>
+    <div style="font-size:.78rem;color:var(--text-muted);margin-top:2px;" id="landing-user"></div>
+  </div>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;width:100%;max-width:440px;">
+    <div id="btn-go-farm" style="background:var(--white);border:2px solid var(--border);border-radius:16px;padding:2rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,box-shadow .2s;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🌿</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--soil);margin-bottom:4px;">Farm</div>
+      <div style="font-size:.62rem;color:var(--text-muted);">Thenery Farm Records</div>
+    </div>
+    <div id="btn-go-home" style="background:var(--white);border:2px solid var(--border);border-radius:16px;padding:2rem 1rem;text-align:center;cursor:pointer;transition:border-color .2s,box-shadow .2s;">
+      <div style="font-size:2.5rem;margin-bottom:10px;">🏠</div>
+      <div style="font-size:1.1rem;font-weight:700;color:var(--soil);margin-bottom:4px;">Home</div>
+      <div style="font-size:.62rem;color:var(--text-muted);">Thenery Home Records</div>
+    </div>
+  </div>
+  <button class="ghost" id="btn-logout-landing" style="margin-top:2rem;background:none;color:var(--text-muted);border:1px solid var(--border);padding:8px 20px;border-radius:8px;">Sign out</button>
+</div>
+
+<header id="main-header" style="display:none;">
+  <!-- Left: sync status -->
+  <div style="display:flex;align-items:center;">
+    <span id="last-saved-note" style="font-size:.65rem;color:rgba(255,255,255,.55);white-space:nowrap;"></span>
+  </div>
+  <!-- Centre: brand -->
+  <div style="position:absolute;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;">
+    <div class="hdr-icon" id="hdr-section-icon">🌿</div>
+    <h1 style="margin:0;font-size:1.1rem;font-weight:800;letter-spacing:4px;">VAYAL</h1>
+  </div>
+  <!-- Right: avatar + hamburger dropdown -->
+  <div style="position:relative;display:flex;align-items:center;gap:8px;">
+    <div id="hdr-avatar" style="width:32px;height:32px;border-radius:50%;background:var(--leaf);display:flex;align-items:center;justify-content:center;font-size:.9rem;font-weight:700;color:#fff;flex-shrink:0;border:2px solid rgba(255,255,255,.3);"></div>
+    <div id="hdr-hamburger" style="display:flex;flex-direction:column;gap:4px;justify-content:center;cursor:pointer;padding:4px;">
+      <div style="width:16px;height:2px;background:rgba(255,255,255,.8);border-radius:2px;"></div>
+      <div style="width:16px;height:2px;background:rgba(255,255,255,.8);border-radius:2px;"></div>
+      <div style="width:16px;height:2px;background:rgba(255,255,255,.8);border-radius:2px;"></div>
+    </div>
+    <!-- Dropdown menu -->
+    <div id="hdr-dropdown" style="display:none;position:absolute;right:0;top:calc(100% + 8px);background:var(--white);border:1px solid var(--border);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.15);min-width:200px;z-index:100;overflow:hidden;">
+      <button id="btn-switch-section-dd" style="width:100%;text-align:left;padding:11px 14px;font-size:.88rem;border:none;background:none;display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;white-space:nowrap;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background='none'"><span id="btn-switch-icon-dd">🏠</span><span id="btn-switch-text-dd">Go to Home Records</span></button>
+      <div style="border-top:1px solid var(--border);margin:2px 0;"></div>
+      <button id="btn-refresh" style="width:100%;text-align:left;padding:11px 14px;font-size:.88rem;border:none;background:none;display:flex;align-items:center;gap:8px;color:var(--text);cursor:pointer;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background='none'">🔄 <span>Refresh</span></button>
+      <button id="btn-settings" style="display:none;width:100%;text-align:left;padding:11px 14px;font-size:.88rem;border:none;background:none;align-items:center;gap:8px;color:var(--text);cursor:pointer;" onmouseenter="this.style.background='var(--cream)'" onmouseleave="this.style.background='none'">⚙️ <span>Settings</span></button>
+      <div style="border-top:1px solid var(--border);margin:2px 0;"></div>
+      <button id="btn-logout" style="width:100%;text-align:left;padding:11px 14px;font-size:.88rem;border:none;background:none;display:flex;align-items:center;gap:8px;color:var(--berry);cursor:pointer;" onmouseenter="this.style.background='var(--berry-light)'" onmouseleave="this.style.background='none'">↪ <span>Sign out</span></button>
+    </div>
+  </div>
+</header>
+
+<!-- Connection settings (admin only) -->
+<!-- Settings panel (admin only) -->
+<div class="overlay-wrap hidden" id="user-admin-overlay">
+  <div class="overlay-box" style="max-width:580px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;">
+      <h2 class="section-title" style="margin:0;">⚙ Settings</h2>
+      <button id="close-user-admin">Close</button>
+    </div>
+
+    <!-- Connection -->
+    <h2 class="section-title">Connection</h2>
+    <p class="instructions" style="margin-bottom:10px;">Google Apps Script Web app URL (ends in <code>/exec</code>).</p>
+    <div class="field"><input type="text" id="script-url-input" placeholder="https://script.google.com/macros/s/.../exec"></div>
+    <div class="field"><label>Secret token</label><input type="text" id="script-token-input" placeholder="Your secret token"></div>
+    <div style="display:flex;gap:8px;margin-bottom:4px;">
+      <button class="primary" id="save-script-url" style="flex:1;">Save & connect</button>
+    </div>
+    <p id="settings-error" style="color:var(--berry);font-size:.85rem;margin-top:6px;display:none;"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.25rem 0;">
+
+    <!-- Users -->
+    <h2 class="section-title">Users</h2>
+    <div id="user-list-wrap" style="margin-bottom:1.25rem;"></div>
+    <hr style="border:none;border-top:1px solid var(--border);margin-bottom:1.25rem;">
+    <h2 class="section-title">Add new user</h2>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px;">
+      <div class="field" style="margin:0;"><label>Name</label><input type="text" id="new-user-name" placeholder="e.g. Priya"></div>
+      <div class="field" style="margin:0;"><label>Password</label><input type="password" id="new-user-pass" placeholder="Set a password"></div>
+    </div>
+    <div class="field"><label>Role</label>
+      <select id="new-user-role">
+        <option value="user">User — can add entries and view records</option>
+        <option value="admin">Admin — full access including user management</option>
+      </select>
+    </div>
+    <button class="primary" id="btn-add-user" style="width:100%;">Add user</button>
+    <p id="user-admin-msg" style="font-size:.85rem;margin-top:8px;display:none;"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0 1.25rem;">
+    <h2 class="section-title">Worker names</h2>
+    <p class="instructions" style="margin-bottom:12px;">Rename a worker — updates all their wage and advance records in the Google Sheet.</p>
+    <div id="worker-name-list"></div>
+    <p id="worker-rename-msg" style="font-size:.85rem;margin-top:8px;display:none;"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0 1.25rem;">
+    <h2 class="section-title">Crops</h2>
+    <p class="instructions" style="margin-bottom:12px;">Rename or remove crops. New crops are added automatically when you type them in an entry form.</p>
+    <div id="crop-name-list"></div>
+    <p id="crop-manage-msg" style="font-size:.85rem;margin-top:8px;display:none;"></p>
+    <hr style="border:none;border-top:1px solid var(--border);margin:1.5rem 0 1.25rem;">
+    <h2 class="section-title">Household categories</h2>
+    <p class="instructions" style="margin-bottom:12px;">Rename or remove household expense categories. New ones are added automatically when you type them.</p>
+    <div id="home-cat-name-list"></div>
+    <p id="home-cat-manage-msg" style="font-size:.85rem;margin-top:8px;display:none;"></p>
+  </div>
+</div>
+
+<!-- Connecting / connection failed overlay -->
+
+<div id="farm-section" style="display:none;min-height:100vh;">
+<main>
+
+  <div class="tabs">
+    <button class="tab active" data-tab="summary">Summary</button>
+    <button class="tab" data-tab="add">Record</button>
+    <button class="tab" data-tab="log">Log</button>
+    <button class="tab" data-tab="workers">Payroll</button>
+    <button class="tab" data-tab="analytics">Analytics</button>
+  </div>
+
+  <!-- ===== SUMMARY ===== -->
+  <div class="view active" id="view-summary">
+
+    <div class="filters" style="margin-bottom:1rem;">
+      <div><label>Year</label><select id="summary-year-filter"></select></div>
+      <div><label>Crop</label><select id="crop-filter"></select></div>
+    </div>
+
+    <!-- Dark overview card -->
+    <div class="card" style="padding:1.5rem;margin-bottom:1rem;border-left:5px solid var(--leaf);background:var(--white);">
+      <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Net profit / loss</p>
+      <p id="stat-net" style="font-size:2.4rem;font-weight:800;margin:0 0 3px;color:var(--leaf-dark);">₹ 0</p>
+      <p id="stat-margin" style="font-size:.82rem;color:var(--text-muted);margin:0 0 1.25rem;"></p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+        <div style="background:var(--cream);border-radius:10px;padding:12px;">
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 3px;">Income</p>
+          <p id="stat-income" style="font-size:1.05rem;font-weight:700;color:var(--leaf-dark);margin:0;">₹ 0</p>
+        </div>
+        <div style="background:var(--cream);border-radius:10px;padding:12px;">
+          <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 3px;">Total expenses</p>
+          <p id="stat-total-exp" style="font-size:1.05rem;font-weight:700;color:var(--berry);margin:0;">₹ 0</p>
+        </div>
+        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin:0 0 2px;">Purchases</p>
+          <p id="stat-expenses" style="font-size:.9rem;font-weight:600;color:var(--berry);margin:0;">₹ 0</p>
+        </div>
+        <div style="background:var(--cream);border-radius:8px;padding:10px;">
+          <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin:0 0 2px;">Wages paid</p>
+          <p id="stat-wages" style="font-size:.9rem;font-weight:600;color:var(--berry);margin:0;">₹ 0</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Cumulative expense vs income chart -->
+    <div class="card">
+      <h2 class="section-title">Cumulative expenses vs income</h2>
+      <p class="instructions" style="margin-bottom:10px;">Expenses accumulate month by month. The green line is your total income — when bars reach it, you've spent all your earnings.</p>
+      <div style="position:relative;height:220px;"><canvas id="cumulative-chart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:10px;font-size:.75rem;color:var(--text-muted);">
+        <span><span style="display:inline-block;width:12px;height:10px;background:rgba(140,58,43,.75);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Cumulative expenses</span>
+        <span><span style="display:inline-block;width:20px;height:3px;background:var(--leaf);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Total income</span>
+      </div>
+    </div>
+
+    <div class="card"><h2 class="section-title">Purchases by category</h2><div id="by-category"></div></div>
+    <div class="card"><h2 class="section-title">Harvest income by crop</h2><div id="by-income-crop"></div></div>
+  </div>
+
+  <!-- ===== WORKERS ===== -->
+  <div class="view" id="view-workers">
+    <div class="card">
+      <h2 class="section-title">Worker balance</h2>
+      <p class="instructions" style="margin-bottom:12px;">All-time totals — not affected by any filter. Balance = wages earned minus cash paid.</p>
+      <div style="overflow-x:auto;"><div id="by-worker" style="min-width:340px;"></div></div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Recent cash payments</h2>
+      <div class="row-table" id="recent-payments"></div>
+    </div>
+    <div class="card">
+      <h2 class="section-title">Recent labour entries</h2>
+      <div class="row-table" id="recent-wages"></div>
+    </div>
+  </div>
+
+  <!-- ===== ADD ENTRY ===== -->
+  <div class="view" id="view-add">
+    <div class="lock-warn" id="lock-warning">
+      <p>⚠️ <strong id="lock-warning-name"></strong> is currently adding entries. Please wait to avoid conflicts. <span id="lock-warning-time" style="color:#a07000;font-size:.8rem;"></span></p>
+    </div>
+
+    <div class="card">
+      <div class="toggle-group" id="main-type-toggle">
+        <button class="active" id="type-expense">Expense</button>
+        <button id="type-payment">Daily labour</button>
+        <button id="type-advance">Payments</button>
+        <button id="type-income">Income</button>
+      </div>
+
+      <!-- EXPENSE: Purchase only (Daily works moved to Worker ledger tab) -->
+      <div id="form-expense">
+        <div class="field"><label>Date</label><input type="date" id="exp-date"></div>
+        <div class="field"><label>Crop <span style="font-weight:400;color:var(--text-muted);">(or General if not crop-specific)</span></label>
+          <input type="text" id="exp-crop" placeholder="e.g. Coffee" list="crop-suggestions" autocomplete="off">
+        </div>
+        <div class="field"><label>Category</label>
+          <select id="exp-category">
+            <optgroup label="Crop expenses">
+              <option>Fertilizer</option>
+              <option>Pesticides</option>
+              <option>Seeds/seedlings</option>
+              <option>Harvesting cost</option>
+            </optgroup>
+            <optgroup label="Farm infrastructure">
+              <option>Motor/pump</option>
+              <option>Irrigation</option>
+              <option>Fencing/boundary</option>
+              <option>Land preparation</option>
+              <option>Construction/repair</option>
+            </optgroup>
+            <optgroup label="Operations">
+              <option>Tools/equipment</option>
+              <option>Fuel/transport</option>
+              <option>Electricity</option>
+              <option>Repairs</option>
+            </optgroup>
+            <optgroup label="Other">
+              <option>Other</option>
+            </optgroup>
+          </select>
+        </div>
+        <div class="field"><label>Description</label><input type="text" id="exp-desc" placeholder="e.g. Bag of NPK fertilizer"></div>
+        <div class="field"><label>Amount</label><input type="number" id="exp-amount" placeholder="0.00" step="0.01"></div>
+        <div class="field"><label>Recorded by</label><input type="text" id="exp-by"></div>
+        <button class="primary" id="save-expense" style="width:100%;">Save expense</button>
+      </div>
+
+      <!-- DAILY LABOUR ENTRY -->
+      <div id="form-payment" style="display:none;">
+        <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 12px;">Record who worked today and how much each person earns.</p>
+        <div class="field"><label>Date</label><input type="date" id="pay-date"></div>
+        <div class="field"><label>Crop</label>
+          <input type="text" id="pay-crop" placeholder="e.g. Coffee" list="crop-suggestions" autocomplete="off">
+        </div>
+        <div class="field"><label>Work done <span style="font-weight:400;color:var(--text-muted);">(same for everyone today)</span></label>
+          <input type="text" id="pay-task" placeholder="e.g. Weeding, coffee picking">
+        </div>
+        <p style="font-size:.8rem;color:var(--text-muted);margin:0 0 8px;">Tick the workers who came today and enter each one's wage:</p>
+        <div id="pay-worker-list" style="margin-bottom:8px;"></div>
+        <div id="pay-new-worker-row" style="background:var(--cream);border:1px dashed var(--border);border-radius:8px;padding:10px 12px;margin-bottom:10px;display:none;">
+          <p style="font-size:.8rem;color:var(--text-muted);margin:0 0 8px;">Add new worker</p>
+          <div style="display:grid;grid-template-columns:1fr auto;gap:8px;align-items:end;">
+            <div class="field" style="margin:0;"><label>Name</label><input type="text" id="pay-new-worker-name" placeholder="Worker name" list="worker-suggestions" autocomplete="off"></div>
+            <button id="btn-add-pay-worker" style="padding:9px 12px;white-space:nowrap;">Add</button>
+          </div>
+        </div>
+        <button id="btn-show-pay-worker" style="width:100%;margin-bottom:10px;font-size:.85rem;">+ Add a worker not in the list</button>
+        <div class="field"><label>Recorded by</label><input type="text" id="pay-by"></div>
+        <button class="primary" id="save-workpay" style="width:100%;">Save labour entry</button>
+      </div>
+
+      <!-- PAYMENTS -->
+      <div id="form-advance" style="display:none;">
+        <p style="font-size:.82rem;color:var(--text-muted);margin:0 0 12px;">Record cash given to a worker — wage payment, advance, bonus, or anything else.</p>
+        <div class="field"><label>Date</label><input type="date" id="adv-date"></div>
+        <div class="field"><label>Worker name</label>
+          <input type="text" id="adv-name" placeholder="e.g. John" list="worker-suggestions" autocomplete="off">
+          <datalist id="worker-suggestions"></datalist>
+          <datalist id="crop-suggestions"></datalist>
+        </div>
+        <div class="field"><label>Amount given</label><input type="number" id="adv-amount" placeholder="0.00" step="0.01"></div>
+        <div class="field"><label>Reason</label>
+          <select id="adv-reason">
+            <option value="Wage payment">Wage payment</option>
+            <option value="Advance">Advance</option>
+            <option value="Bonus">Bonus</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Note <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+          <input type="text" id="adv-note" placeholder="e.g. For this week's wages, school fees">
+        </div>
+        <div class="field"><label>Recorded by</label><input type="text" id="adv-by"></div>
+        <button class="primary" id="save-advance" style="width:100%;">Save payment</button>
+      </div>
+
+      <!-- INCOME -->
+      <div id="form-income" style="display:none;">
+        <div class="field"><label>Date</label><input type="date" id="income-date"></div>
+        <div class="field"><label>Crop sold</label>
+          <input type="text" id="income-crop" placeholder="e.g. Coffee" list="crop-suggestions" autocomplete="off">
+        </div>
+        <div class="field"><label>Buyer</label><input type="text" id="income-buyer" placeholder="e.g. Local cooperative"></div>
+        <div class="field"><label>Quantity sold</label><input type="number" id="income-quantity" placeholder="0" step="0.01"></div>
+        <div class="field"><label>Unit</label>
+          <select id="income-unit"><option>kg</option><option>lb</option><option>bags</option><option>quintal</option><option>ton</option><option>other</option></select>
+        </div>
+        <div class="field"><label>Amount received</label><input type="number" id="income-amount" placeholder="0.00" step="0.01"></div>
+        <div class="field"><label>Recorded by</label><input type="text" id="income-by"></div>
+        <button class="primary" id="save-income" style="width:100%;">Save income</button>
+      </div>
+
+      <div id="save-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;display:none;align-items:center;gap:10px;font-size:.88rem;font-weight:500;">
+        <div id="save-spinner" style="width:18px;height:18px;border:2px solid rgba(255,255,255,.4);border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;flex-shrink:0;display:none;"></div>
+        <span id="save-msg-text"></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== LOG ===== -->
+  <div class="view" id="view-log">
+    <div class="filters" style="margin-bottom:1rem;">
+      <div><label>Type</label>
+        <select id="log-filter">
+          <option value="all">All entries</option>
+          <option value="expense">Purchases</option>
+          <option value="wage">Labour entry (wages)</option>
+          <option value="advance">Cash payment to workers</option>
+          <option value="income">Income</option>
+        </select>
+      </div>
+      <div><label>Crop</label><select id="log-crop-filter"></select></div>
+    </div>
+    <div class="card"><div class="row-table" id="log-list"></div></div>
+  </div>
+
+  <!-- ===== ANALYTICS ===== -->
+  <div class="view" id="view-analytics">
+    <div class="filters" style="margin-bottom:1rem;">
+      <div><label>Year</label><select id="year-filter"></select></div>
+      <div><label>Crop</label><select id="analytics-crop-filter"></select></div>
+    </div>
+
+    <!-- Year stat cards -->
+    <div class="stats-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:1rem;">
+      <div class="stat-card"><p class="label">Total costs</p><p class="value" id="year-stat-cost">₹ 0</p></div>
+      <div class="stat-card income"><p class="label">Total income</p><p class="value" id="year-stat-income">₹ 0</p></div>
+      <div class="stat-card" id="year-net-card"><p class="label">Net profit / loss</p><p class="value" id="year-stat-net">₹ 0</p></div>
+    </div>
+
+    <!-- Monthly breakdown with chart type toggle -->
+    <div class="card">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <h2 class="section-title" style="margin:0;">Monthly breakdown</h2>
+        <div style="display:flex;gap:6px;">
+          <button id="chart-type-bar" class="active" style="padding:5px 10px;font-size:.8rem;border-radius:6px;border:1px solid var(--border);">Bar</button>
+          <button id="chart-type-line" style="padding:5px 10px;font-size:.8rem;border-radius:6px;border:1px solid var(--border);">Line</button>
+        </div>
+      </div>
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#8c6a2b;"></span>Purchases</span>
+        <span><span class="legend-dot" style="background:#8c3a2b;"></span>Wages</span>
+        <span><span class="legend-dot" style="background:#4a6741;"></span>Income</span>
+      </div>
+      <div style="position:relative;height:280px;"><canvas id="monthly-chart" aria-label="Monthly breakdown chart"></canvas></div>
+    </div>
+
+    <!-- Net profit trend -->
+    <div class="card">
+      <h2 class="section-title">Monthly net profit / loss</h2>
+      <p class="instructions" style="margin-bottom:10px;">Green = profitable month, red = loss. Shows which months the farm made or lost money.</p>
+      <div style="position:relative;height:200px;"><canvas id="net-trend-chart" aria-label="Net profit trend chart"></canvas></div>
+    </div>
+
+    <!-- Purchases by category -->
+    <div class="card">
+      <h2 class="section-title">Purchases by category</h2>
+      <div style="position:relative;" id="category-chart-wrap"><canvas id="category-chart" aria-label="Purchases by category chart"></canvas></div>
+    </div>
+
+    <!-- Income by crop -->
+    <div class="card">
+      <h2 class="section-title">Income by crop</h2>
+      <div style="position:relative;height:220px;"><canvas id="income-crop-chart" aria-label="Income by crop chart"></canvas></div>
+    </div>
+
+    <!-- Year comparison -->
+    <div class="card">
+      <h2 class="section-title">Year comparison</h2>
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+        <span style="font-size:.85rem;color:var(--text-muted);">From</span>
+        <select id="compare-year-a" style="padding:7px 10px;font-size:.9rem;border-radius:8px;border:1px solid var(--border);font-weight:600;"></select>
+        <span style="font-size:.85rem;color:var(--text-muted);">to</span>
+        <select id="compare-year-b" style="padding:7px 10px;font-size:.9rem;border-radius:8px;border:1px solid var(--border);font-weight:600;"></select>
+      </div>
+      <div id="compare-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:1rem;"></div>
+      <div style="position:relative;height:240px;"><canvas id="compare-chart"></canvas></div>
+      <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:.75rem;color:var(--text-muted);" id="compare-legend"></div>
+    </div>
+  </div>
+</main>
+</div><!-- end #farm-section -->
+
+<!-- ===== HOME SECTION ===== -->
+<div id="home-section" style="display:none;min-height:100vh;overflow-y:auto;">
+  <main>
+    <div class="tabs">
+      <button class="tab active" data-home-tab="home-summary">Summary</button>
+      <button class="tab" data-home-tab="home-add">Record</button>
+      <button class="tab" data-home-tab="home-log">Log</button>
+    </div>
+
+    <!-- HOME SUMMARY -->
+    <div class="view active" id="view-home-summary">
+      <div class="filters" style="margin-bottom:1rem;">
+        <div><label>Month</label><select id="home-month-filter"></select></div>
+        <div><label>Year</label><select id="home-year-filter"></select></div>
+      </div>
+
+      <!-- Total spent card -->
+      <div class="card" style="padding:1.5rem;border-left:5px solid var(--berry);">
+        <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total spent</p>
+        <p id="home-stat-total" style="font-size:2.2rem;font-weight:800;margin:0 0 1rem;color:var(--berry);">₹ 0</p>
+        <div id="home-by-category"></div>
+      </div>
+
+      <!-- Monthly analysis chart -->
+      <div class="card">
+        <h2 class="section-title">Monthly expenses</h2>
+        <p class="instructions" style="margin-bottom:10px;">How much was spent each month of the selected year.</p>
+        <div style="position:relative;height:220px;"><canvas id="home-monthly-chart"></canvas></div>
+      </div>
+
+      <!-- Top categories -->
+      <div class="card">
+        <h2 class="section-title">Top categories this year</h2>
+        <div id="home-top-categories"></div>
+      </div>
+    </div>
+
+    <!-- HOME ADD EXPENSE -->
+    <div class="view" id="view-home-add">
+      <div class="card">
+        <div class="field"><label>Date</label><input type="date" id="home-exp-date"></div>
+        <div class="field"><label>Category</label>
+          <input type="text" id="home-exp-category" placeholder="e.g. Groceries, Car fuel, EMI" list="home-cat-suggestions" autocomplete="off">
+          <datalist id="home-cat-suggestions"></datalist>
+        </div>
+        <div class="field"><label>Description <span style="font-weight:400;color:var(--text-muted);">(optional)</span></label>
+          <input type="text" id="home-exp-desc" placeholder="e.g. Monthly ration, school fees">
+        </div>
+        <div class="field"><label>Amount</label><input type="number" id="home-exp-amount" placeholder="0.00" step="0.01"></div>
+        <div class="field"><label>Recorded by</label><input type="text" id="home-exp-by"></div>
+        <button class="primary" id="save-home-expense" style="width:100%;">Save expense</button>
+        <div id="home-save-msg" style="display:none;margin-top:12px;padding:10px 14px;border-radius:8px;align-items:center;gap:10px;font-size:.88rem;font-weight:500;">
+          <span id="home-save-msg-text"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- HOME LOG -->
+    <div class="view" id="view-home-log">
+      <div class="filters" style="margin-bottom:1rem;">
+        <div><label>Category</label>
+          <select id="home-log-filter">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+      </div>
+      <div class="card"><div class="row-table" id="home-log-list"></div></div>
+    </div>
+
+  </main>
+
+  <!-- HOME ANALYSIS (shown in Summary tab) -->
+
+</div>
+
+<footer style="text-align:center;padding:1.5rem 1rem 2rem;font-size:.72rem;color:var(--text-muted);letter-spacing:.3px;">
+  VAYAL v2.0 &nbsp;·&nbsp; © 2026 Arjun Thenery Manikantan
+</footer>
+</div><!-- end #app -->
+
+<!-- Connecting overlay -->
+<div id="connecting-overlay" style="display:none;position:fixed;inset:0;background:var(--cream);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:1rem;">
+  <div id="conn-spinner"></div>
+  <p id="conn-msg" style="font-size:1rem;color:var(--text-muted);margin:0;"></p>
+  <div id="conn-error-box" style="display:none;text-align:center;padding:0 1rem;">
+    <p style="color:var(--berry);font-size:1.05rem;font-weight:600;margin:0 0 8px;">Connection failed</p>
+    <p id="conn-error-detail" style="color:var(--text-muted);font-size:.875rem;margin:0 0 1.25rem;max-width:320px;line-height:1.6;"></p>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+      <button class="primary" id="conn-retry">Try again</button>
+      <button id="conn-fix-url" style="display:none;">Fix connection URL</button>
+      <button id="conn-logout">Sign out</button>
+    </div>
+  </div>
+</div>
+
+<script>
+(function(){
+
+// ===================== CONSTANTS =====================
+const SESSION_KEY = 'farmSession';
+const STORAGE_URL_KEY = 'vayalScriptUrl';
+const STORAGE_TOKEN_KEY = 'vayalToken';
+
+// ===================== STATE =====================
+let entries = [], crops = ['Coffee'], sheetUsers = [], currentUser = null, pendingSheetData = null;
+let currentTab = 'summary';
+let monthlyChart=null, categoryChart=null, incomeCropChart=null, netTrendChart=null;
+let monthlyChartType='bar';
+let scriptUrl = localStorage.getItem(STORAGE_URL_KEY) || '';
+let scriptToken = localStorage.getItem(STORAGE_TOKEN_KEY) || '';
+let lockRenewInterval = null;
+const knownWorkers = new Set();
+
+// ===================== UTILS =====================
+const fmt = n => '₹ ' + new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
+const todayStr = () => new Date().toISOString().slice(0,10);
+function escHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+const setSyncNote = t => {
+  const el=document.getElementById('last-saved-note');
+  if(!el) return;
+  if(t.includes('Saving')||t.includes('Removing')||t.includes('Connecting')) el.textContent='Syncing...';
+  else if(t.includes('date')||t.includes('Saved')||t==='Saved') el.textContent='Synced';
+  else if(t.includes('error')||t.includes('failed')||t.includes('Error')) el.textContent='Not synced';
+  else el.textContent=t;
+};
+function hashPass(p){ let h=0; for(let i=0;i<p.length;i++){h=Math.imul(31,h)+p.charCodeAt(i)|0;} return h.toString(36); }
+
+// ===================== USER SYSTEM =====================
+function getSession(){ try{ return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e){ return null; } }
+function setSession(u){ sessionStorage.setItem(SESSION_KEY, JSON.stringify({name:u.name,role:u.role})); }
+function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
+
+function populateLoginDropdown(){
+  const sel = document.getElementById('login-user');
+  if(sheetUsers.length){
+    sel.innerHTML = sheetUsers.map(u=>`<option value="${escHtml(u.name)}">${escHtml(u.name)}</option>`).join('');
+    sel.disabled = false;
+    document.getElementById('btn-login').disabled = false;
+    document.getElementById('login-sub').textContent = 'Sign in to continue';
+  } else {
+    sel.innerHTML = '<option>Loading...</option>';
+    sel.disabled = true;
+    document.getElementById('btn-login').disabled = true;
+  }
+}
+
+async function initLoginScreen(){
+  document.getElementById('login-screen').classList.remove('hidden');
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  document.getElementById('login-sub').textContent = 'Loading users...';
+  populateLoginDropdown();
+  const res = await callScriptJSONP({action:'load'});
+  if(res && res.users && res.users.length){
+    sheetUsers = res.users;
+    pendingSheetData = res;
+  } else {
+    sheetUsers = [{name:'Arjun',role:'admin',hash:'default'}];
+  }
+  populateLoginDropdown();
+}
+
+document.getElementById('btn-login').addEventListener('click', doLogin);
+document.getElementById('login-pass').addEventListener('keydown', e=>{ if(e.key==='Enter') doLogin(); });
+
+function doLogin(){
+  const name = document.getElementById('login-user').value;
+  const pass = document.getElementById('login-pass').value;
+  const errEl = document.getElementById('login-error');
+  const user = sheetUsers.find(u=>u.name===name);
+  if(!user){ errEl.textContent='User not found.'; errEl.style.display='block'; return; }
+  const ok = (user.hash==='default' && pass==='arjun123') || user.hash===hashPass(pass);
+  if(!ok){ errEl.textContent='Incorrect password.'; errEl.style.display='block'; document.getElementById('login-pass').value=''; return; }
+  errEl.style.display='none';
+  currentUser = user;
+  setSession(user);
+  launchApp();
+}
+
+let currentSection = 'farm'; // 'farm' or 'home'
+
+function launchApp(){
+  document.getElementById('login-screen').classList.add('hidden');
+  document.getElementById('app').style.display = 'block';
+  document.getElementById('hdr-avatar').textContent = currentUser.name.charAt(0).toUpperCase();
+  document.getElementById('landing-user').textContent = 'Welcome, ' + currentUser.name;
+  const isAdmin = currentUser.role==='admin';
+  document.getElementById('btn-settings').style.display = isAdmin?'flex':'none';
+  document.getElementById('conn-fix-url').style.display = isAdmin?'':'none';
+  ['exp-by','pay-by','adv-by','income-by','home-exp-by'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=currentUser.name; });
+  // Show setup screen if admin has no URL configured
+  if(isAdmin && (!scriptUrl||!scriptToken)){
+    showSetupScreen();
+    return;
+  }
+  showLanding();
+  if(pendingSheetData){ applySheetData(pendingSheetData); pendingSheetData=null; hideConnecting(); setSyncNote('Up to date');  }
+  else { loadFromSheet(); }
+}
+
+function showLanding(){
+  document.getElementById('landing-screen').style.display='flex';
+  document.getElementById('main-header').style.display='none';
+  document.getElementById('farm-section').style.display='none';
+  document.getElementById('home-section').style.display='none';
+}
+
+function enterSection(section){
+  currentSection=section;
+  document.getElementById('landing-screen').style.display='none';
+  document.getElementById('main-header').style.display='flex';
+  if(section==='farm'){
+    document.getElementById('farm-section').style.display='block';
+    document.getElementById('home-section').style.display='none';
+    document.getElementById('hdr-section-icon').textContent='🌿';
+    document.getElementById('btn-switch-icon-dd').textContent='🏠';
+    document.getElementById('btn-switch-text-dd').textContent='Go to Home Records';
+    switchTab('summary');
+    if(!entries.length) loadFromSheet();
+    else render();
+  } else {
+    document.getElementById('farm-section').style.display='none';
+    document.getElementById('home-section').style.display='block';
+    document.getElementById('hdr-section-icon').textContent='🏠';
+    document.getElementById('btn-switch-icon-dd').textContent='🌿';
+    document.getElementById('btn-switch-text-dd').textContent='Go to Farm Records';
+    renderHomeCatSuggestions();
+    renderHomeSection();
+  }
+}
+
+
+// Hover effects for landing cards
+['btn-go-farm','btn-go-home'].forEach(id=>{
+  const el=document.getElementById(id);
+  el.addEventListener('click',()=>enterSection(id==='btn-go-farm'?'farm':'home'));
+  el.addEventListener('mouseenter',()=>{ el.style.borderColor='var(--leaf)'; el.style.boxShadow='0 4px 16px rgba(0,0,0,.1)'; });
+  el.addEventListener('mouseleave',()=>{ el.style.borderColor='var(--border)'; el.style.boxShadow='none'; });
+});
+
+document.getElementById('btn-logout').addEventListener('click', doLogout);
+document.getElementById('btn-logout-landing').addEventListener('click', doLogout);
+function doLogout(){
+  if(currentTab==='add') releaseEditLock();
+  hideConnecting(); clearSession(); currentUser=null; pendingSheetData=null;
+  initLoginScreen();
+}
+
+// ===================== CONNECTION OVERLAY =====================
+function showConnecting(){
+  const ov=document.getElementById('connecting-overlay');
+  ov.style.display='flex';
+  document.getElementById('conn-spinner').style.display='block';
+  document.getElementById('conn-msg').textContent=scriptUrl?'Connecting to Google Sheet...':'No Google Sheet linked yet.';
+  document.getElementById('conn-error-box').style.display='none';
+}
+function hideConnecting(){ document.getElementById('connecting-overlay').style.display='none'; }
+function showConnectFailed(reason){
+  document.getElementById('conn-spinner').style.display='none';
+  document.getElementById('conn-msg').textContent='';
+  document.getElementById('conn-error-detail').textContent=reason||'Could not reach the Google Sheet.';
+  document.getElementById('conn-error-box').style.display='block';
+}
+document.getElementById('conn-retry').addEventListener('click',()=>{ showConnecting(); loadFromSheet(); });
+document.getElementById('conn-fix-url').addEventListener('click',()=>{ hideConnecting(); openSettings(); });
+document.getElementById('conn-logout').addEventListener('click', doLogout);
+
+// ===================== SETUP SCREEN =====================
+function showSetupScreen(){
+  document.getElementById('setup-screen').style.display='flex';
+  document.getElementById('app').style.display='block';
+  document.getElementById('login-screen').classList.add('hidden');
+}
+function hideSetupScreen(){
+  document.getElementById('setup-screen').style.display='none';
+}
+document.getElementById('btn-setup-save').addEventListener('click', async()=>{
+  const url=document.getElementById('setup-url').value.trim();
+  const token=document.getElementById('setup-token').value.trim();
+  const err=document.getElementById('setup-error');
+  if(!url||!url.includes('script.google.com')){err.textContent="Doesn't look like a valid Apps Script URL.";err.style.display='block';return;}
+  if(!token){err.textContent="Please enter a secret token.";err.style.display='block';return;}
+  scriptUrl=url; scriptToken=token;
+  localStorage.setItem(STORAGE_URL_KEY,scriptUrl);
+  localStorage.setItem(STORAGE_TOKEN_KEY,scriptToken);
+  hideSetupScreen();
+  showLanding();
+  showConnecting();
+  await loadFromSheet();
+});
+document.getElementById('btn-setup-logout').addEventListener('click', doLogout);
+
+// ===================== AVATAR DROPDOWN =====================
+document.getElementById('hdr-hamburger').addEventListener('click', e=>{
+  e.stopPropagation();
+  const dd=document.getElementById('hdr-dropdown');
+  dd.style.display=dd.style.display==='none'?'block':'none';
+});
+document.addEventListener('click',()=>{
+  const dd=document.getElementById('hdr-dropdown');
+  if(dd) dd.style.display='none';
+});
+document.getElementById('btn-switch-section-dd').addEventListener('click',()=>{
+  enterSection(currentSection==='farm'?'home':'farm');
+});
+document.getElementById('btn-settings').addEventListener('click', openSettings);
+function openSettings(){
+  document.getElementById('script-url-input').value=scriptUrl||'';
+  document.getElementById('script-token-input').value=scriptToken||'';
+  document.getElementById('settings-error').style.display='none';
+  renderUserList(); renderWorkerNameList(); renderCropNameList(); renderHomeCatNameList();
+  document.getElementById('user-admin-overlay').classList.remove('hidden');
+}
+document.getElementById('save-script-url').addEventListener('click', async ()=>{
+  const val=document.getElementById('script-url-input').value.trim();
+  const tok=document.getElementById('script-token-input').value.trim();
+  if(!val||!val.includes('script.google.com')){ document.getElementById('settings-error').textContent="Doesn't look like a Google Apps Script URL."; document.getElementById('settings-error').style.display='block'; return; }
+  if(!tok){ document.getElementById('settings-error').textContent="Please enter a secret token."; document.getElementById('settings-error').style.display='block'; return; }
+  scriptUrl=val; scriptToken=tok;
+  localStorage.setItem(STORAGE_URL_KEY,scriptUrl);
+  localStorage.setItem(STORAGE_TOKEN_KEY,scriptToken);
+  document.getElementById('user-admin-overlay').classList.add('hidden');
+  showConnecting(); await loadFromSheet();
+});
+
+// ===================== JSONP =====================
+let cbCounter=0;
+function callScriptJSONP(params){
+  return new Promise(resolve=>{
+    if(!scriptUrl){ resolve({ok:false,error:'Not connected'}); return; }
+    cbCounter++;
+    const cbName='farmCb_'+cbCounter;
+    const script=document.createElement('script');
+    let done=false;
+    const cleanup=()=>{ delete window[cbName]; if(script.parentNode) script.parentNode.removeChild(script); };
+    window[cbName]=data=>{ done=true; cleanup(); resolve(data); };
+    script.onerror=()=>{ if(!done){ cleanup(); resolve({ok:false,error:'Network error'}); } };
+    setTimeout(()=>{ if(!done){ cleanup(); resolve({ok:false,error:'Timed out'}); } }, 18000);
+    script.src=scriptUrl+'?'+new URLSearchParams(Object.assign({callback:cbName,token:scriptToken},params)).toString();
+    document.body.appendChild(script);
+  });
+}
+async function callScript(action, data){
+  const params={action};
+  Object.keys(data||{}).forEach(k=>{ const v=data[k]; params[k]=typeof v==='object'?JSON.stringify(v):v; });
+  const res=await callScriptJSONP(params);
+  if(res&&res.data) applySheetData(res.data);
+  return res;
+}
+function applySheetData(data){
+  entries=[];
+  (data.expenses||[]).forEach(r=>entries.push({id:String(r.Id),type:'expense',date:r.Date||'',crop:r.Crop||'',category:r.Category||'Other',desc:r.Description||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  (data.wages||[]).forEach(r=>entries.push({id:String(r.Id),type:'wage',date:r.Date||'',crop:r.Crop||'',name:r.Worker||'',task:r.WorkDone||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  (data.income||[]).forEach(r=>entries.push({id:String(r.Id),type:'income',date:r.Date||'',crop:r.Crop||'',buyer:r.Buyer||'',quantity:parseFloat(r.Quantity)||0,unit:r.Unit||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  (data.advances||[]).forEach(r=>entries.push({id:String(r.Id),type:'advance',date:r.Date||'',name:r.Worker||'',note:r.Note||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  homeEntries=(data.household||[]).map(r=>({id:String(r.Id),date:r.Date||'',category:r.Category||'Other',desc:r.Description||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  if(data.users&&data.users.length) sheetUsers=data.users;
+  crops=(data.crops&&data.crops.length)?data.crops:['Coffee'];
+  renderCropSelects();
+  renderWorkerSuggestions();
+  renderPayWorkerList();
+  render();
+  if(currentSection==='home') renderHomeSection();
+}
+async function loadFromSheet(){
+  if(!scriptUrl){ showConnectFailed(currentUser&&currentUser.role==='admin'?'No Google Sheet URL saved. Click "Fix connection URL" to add it.':'No connection set up. Ask the admin.'); return; }
+  const res=await callScriptJSONP({action:'load'});
+  if(res&&(res.expenses!==undefined||res.crops)){
+    applySheetData(res);
+    hideConnecting();
+    
+    setSyncNote('Up to date');
+  } else {
+    showConnectFailed('Could not reach the Google Sheet.'+(currentUser&&currentUser.role==='admin'?' Click "Fix connection URL" to update the URL.':''));
+    
+    setSyncNote('Sync failed');
+  }
+}
+document.getElementById('btn-refresh').addEventListener('click', loadFromSheet);
+
+// ===================== TABS =====================
+document.querySelectorAll('.tab').forEach(btn=>btn.addEventListener('click',()=>switchTab(btn.dataset.tab)));
+function switchTab(tab){
+  const prev=currentTab; currentTab=tab;
+  document.querySelectorAll('#farm-section .tab').forEach(b=>b.classList.toggle('active',b.dataset.tab===tab));
+  ['summary','add','log','workers','analytics'].forEach(t=>{
+    const el=document.getElementById('view-'+t); if(el) el.classList.toggle('active',t===tab);
+  });
+  if(tab==='add'&&prev!=='add') acquireEditLock();
+  if(tab!=='add'&&prev==='add') releaseEditLock();
+  render();
+}
+
+// ===================== TYPE TOGGLES =====================
+['expense','payment','advance','income'].forEach(t=>document.getElementById('type-'+t).addEventListener('click',()=>switchType(t)));
+function switchType(type){
+  ['expense','payment','advance','income'].forEach(t=>{
+    document.getElementById('form-'+t).style.display=t===type?'block':'none';
+    document.getElementById('type-'+t).classList.toggle('active',t===type);
+  });
+  if(type==='payment') renderPayWorkerList();
+}
+
+// ===================== CROP SELECTS =====================
+function renderCropSelects(){
+  const cropOpts='<option value="General / Farm">General / Farm</option>'+crops.map(c=>`<option value="${escHtml(c)}">`).join('');
+  document.getElementById('crop-suggestions').innerHTML=cropOpts;
+  const fOpts='<option value="all">All crops</option>'+crops.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  ['crop-filter','log-crop-filter','analytics-crop-filter'].forEach(id=>{
+    const el=document.getElementById(id),prev=el.value;
+    el.innerHTML=fOpts; el.value=(crops.includes(prev)||prev==='all')?(prev||'all'):'all';
+  });
+}
+
+function ensureCropExists(cropName){
+  if(!cropName||cropName==='General / Farm') return;
+  if(!crops.some(c=>c.toLowerCase()===cropName.toLowerCase())){
+    crops.push(cropName); renderCropSelects();
+    callScript('addCrop',{crop:cropName});
+  }
+}
+
+// ===================== WORKER SUGGESTIONS =====================
+function renderWorkerSuggestions(){
+  const names=[...new Set(entries.filter(e=>(e.type==='wage'||e.type==='advance')&&e.name).map(e=>e.name))];
+  knownWorkers.forEach(n=>{ if(!names.includes(n)) names.push(n); });
+  names.sort();
+  document.getElementById('worker-suggestions').innerHTML=names.map(n=>`<option value="${escHtml(n)}">`).join('');
+}
+
+// ===================== WORKER CHECKLIST =====================
+function buildWorkerList(containerId){
+  const known=[...new Set(entries.filter(e=>(e.type==='wage'||e.type==='advance')&&e.name).map(e=>e.name))];
+  knownWorkers.forEach(n=>{ if(!known.includes(n)) known.push(n); });
+  known.sort();
+  const container=document.getElementById(containerId);
+  // Preserve checked state and amounts
+  const prev={};
+  container.querySelectorAll('.worker-item').forEach(el=>{
+    const n=el.dataset.name, cb=el.querySelector('input[type="checkbox"]'), amt=el.querySelector('input[type="number"]');
+    if(n) prev[n]={checked:cb.checked,amount:amt.value};
+  });
+  if(!known.length){ container.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);padding:4px 0;">No workers yet — add one below.</p>'; return; }
+  container.innerHTML=known.map(n=>{
+    const p=prev[n]||{};
+    return `<div class="worker-item${p.checked?' selected':''}" data-name="${escHtml(n)}">
+      <input type="checkbox" id="wc-${containerId}-${escHtml(n)}"${p.checked?' checked':''}>
+      <label class="ww-name" for="wc-${containerId}-${escHtml(n)}">${escHtml(n)}</label>
+      <input type="number" placeholder="₹ amount" step="0.01" value="${p.amount||''}" ${p.checked?'':'disabled'}>
+    </div>`;
+  }).join('');
+  container.querySelectorAll('.worker-item').forEach(el=>{
+    const cb=el.querySelector('input[type="checkbox"]'), amtEl=el.querySelector('input[type="number"]');
+    cb.addEventListener('change',()=>{ const on=cb.checked; el.classList.toggle('selected',on); amtEl.disabled=!on; if(on) amtEl.focus(); });
+  });
+}
+function renderPayWorkerList(){ buildWorkerList('pay-worker-list'); }
+
+// New worker inline add
+document.getElementById('btn-show-pay-worker').addEventListener('click',()=>{
+  document.getElementById('pay-new-worker-row').style.display='block';
+  document.getElementById('btn-show-pay-worker').style.display='none';
+  document.getElementById('pay-new-worker-name').focus();
+});
+document.getElementById('btn-add-pay-worker').addEventListener('click', addPayWorker);
+document.getElementById('pay-new-worker-name').addEventListener('keydown',e=>{ if(e.key==='Enter'){e.preventDefault();addPayWorker();} });
+function addPayWorker(){
+  const input=document.getElementById('pay-new-worker-name');
+  const name=input.value.trim(); if(!name) return;
+  knownWorkers.add(name); input.value='';
+  document.getElementById('pay-new-worker-row').style.display='none';
+  document.getElementById('btn-show-pay-worker').style.display='block';
+  renderPayWorkerList(); renderWorkerSuggestions();
+  // Auto-tick the new worker
+  const item=[...document.getElementById('pay-worker-list').querySelectorAll('.worker-item')].find(el=>el.dataset.name===name);
+  if(item){ const cb=item.querySelector('input[type="checkbox"]'); cb.checked=true; cb.dispatchEvent(new Event('change')); }
+}
+
+// ===================== DATE DEFAULTS =====================
+['exp-date','pay-date','adv-date','income-date'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=todayStr(); });
+
+// ===================== SAVE HANDLERS =====================
+// ===================== REVIEW BEFORE SAVE =====================
+let pendingSave = null; // stores the save function to call on confirm
+
+function showReview(title, rows, onConfirm){
+  document.getElementById('review-title').textContent = '📋 ' + title;
+  document.getElementById('review-rows').innerHTML = rows.map(r=>`
+    <div class="review-row">
+      <span class="review-label">${r.label}</span>
+      <span class="review-value ${r.big?'review-amount':''}">${r.value||'—'}</span>
+    </div>`).join('');
+  pendingSave = onConfirm;
+  document.getElementById('review-overlay').classList.add('active');
+}
+
+document.getElementById('review-cancel').addEventListener('click',()=>{
+  document.getElementById('review-overlay').classList.remove('active');
+  pendingSave = null;
+});
+document.getElementById('review-confirm').addEventListener('click',async()=>{
+  document.getElementById('review-overlay').classList.remove('active');
+  if(pendingSave){ await pendingSave(); pendingSave=null; }
+});
+
+function showSaving(){
+  const ov=document.getElementById('saving-overlay');
+  document.getElementById('saving-card-spinner').style.display='block';
+  document.getElementById('saving-card-icon').style.display='none';
+  document.getElementById('saving-card-title').textContent='Saving...';
+  document.getElementById('saving-card-title').style.color='var(--soil)';
+  document.getElementById('saving-card-sub').textContent='Syncing with Google Sheet';
+  ov.classList.add('active');
+  // Also update save-msg spinner
+  const msg=document.getElementById('save-msg');
+  const spinner=document.getElementById('save-spinner');
+  const text=document.getElementById('save-msg-text');
+  msg.style.display='flex';
+  msg.style.background='var(--soil)';
+  msg.style.color='#fff';
+  spinner.style.display='block';
+  text.textContent='Saving...';
+}
+function showSaved(ok){
+  const ov=document.getElementById('saving-overlay');
+  document.getElementById('saving-card-spinner').style.display='none';
+  const icon=document.getElementById('saving-card-icon');
+  icon.style.display='block';
+  if(ok){
+    icon.textContent='✅';
+    document.getElementById('saving-card-title').textContent='Saved!';
+    document.getElementById('saving-card-title').style.color='var(--leaf-dark)';
+    document.getElementById('saving-card-sub').textContent='Entry saved to Google Sheet';
+  } else {
+    icon.textContent='❌';
+    document.getElementById('saving-card-title').textContent='Sync failed';
+    document.getElementById('saving-card-title').style.color='var(--berry)';
+    document.getElementById('saving-card-sub').textContent='Check your connection and try again';
+  }
+  setTimeout(()=>{
+    ov.classList.remove('active');
+    const msg=document.getElementById('save-msg');
+    const spinner=document.getElementById('save-spinner');
+    const text=document.getElementById('save-msg-text');
+    msg.style.display='flex';
+    spinner.style.display='none';
+    msg.style.background=ok?'var(--leaf)':'var(--berry)';
+    msg.style.color='#fff';
+    text.textContent=ok?'✓ Saved to Google Sheet':'✕ Sync failed — check connection';
+    setTimeout(()=>msg.style.display='none',2500);
+  },1000);
+}
+
+document.getElementById('save-expense').addEventListener('click',async()=>{
+  const date=document.getElementById('exp-date').value, crop=document.getElementById('exp-crop').value;
+  const category=document.getElementById('exp-category').value, desc=document.getElementById('exp-desc').value.trim();
+  const amount=parseFloat(document.getElementById('exp-amount').value), by=document.getElementById('exp-by').value.trim();
+  if(!date||!amount||amount<=0) return;
+  if(!scriptUrl){openSettings();return;}
+  ensureCropExists(crop);
+  showReview('Purchase Expense',[
+    {label:'Date',value:date},
+    {label:'Crop',value:crop},
+    {label:'Category',value:category},
+    {label:'Description',value:desc||'—'},
+    {label:'Amount',value:fmt(amount),big:true},
+    {label:'Recorded by',value:by||'—'},
+  ], async()=>{
+    const entry={id:'e'+Date.now()+Math.floor(Math.random()*9999),date,crop,category,desc,amount,by};
+    entries.push({type:'expense',...entry}); render(); showSaving();
+    document.getElementById('exp-desc').value=''; document.getElementById('exp-amount').value='';
+    setSyncNote('Saving...'); const res=await callScript('addExpense',{entry}); setSyncNote(res.ok?'Saved':'Sync error'); showSaved(res.ok);
+  });
+});
+
+document.getElementById('save-workpay').addEventListener('click',async()=>{
+  const date=document.getElementById('pay-date').value, crop=document.getElementById('pay-crop').value;
+  const task=document.getElementById('pay-task').value.trim(), by=document.getElementById('pay-by').value.trim();
+  if(!date||!scriptUrl){if(!scriptUrl)openSettings();return;}
+  const valid=[...document.querySelectorAll('#pay-worker-list .worker-item')]
+    .filter(el=>el.querySelector('input[type="checkbox"]').checked && parseFloat(el.querySelector('input[type="number"]').value)>0);
+  if(!valid.length) return;
+  ensureCropExists(crop);
+  const workers=valid.map(el=>({name:el.dataset.name, amount:parseFloat(el.querySelector('input[type="number"]').value)}));
+  const total=workers.reduce((s,w)=>s+w.amount,0);
+  showReview('Labour Entry — Work Pay',[
+    {label:'Date',value:date},
+    {label:'Crop',value:crop},
+    {label:'Task',value:task||'—'},
+    {label:'Workers',value:workers.map(w=>`${w.name} (${fmt(w.amount)})`).join(', ')},
+    {label:'Total amount',value:fmt(total),big:true},
+    {label:'Recorded by',value:by||'—'},
+  ], async()=>{
+    showSaving(); setSyncNote('Saving...'); let allOk=true;
+    for(const w of workers){
+      const entry={id:'w'+Date.now()+Math.floor(Math.random()*9999),date,crop,name:w.name,task,amount:w.amount,by};
+      entries.push({type:'wage',...entry});
+      const res=await callScript('addWage',{entry}); if(!res.ok) allOk=false;
+    }
+    document.querySelectorAll('#pay-worker-list .worker-item').forEach(el=>{
+      const cb=el.querySelector('input[type="checkbox"]'), amt=el.querySelector('input[type="number"]');
+      cb.checked=false; el.classList.remove('selected'); amt.value=''; amt.disabled=true;
+    });
+    document.getElementById('pay-task').value='';
+    render(); setSyncNote(allOk?'Saved':'Some sync errors'); showSaved(allOk);
+  });
+});
+
+document.getElementById('save-advance').addEventListener('click',async()=>{
+  const date=document.getElementById('adv-date').value, name=document.getElementById('adv-name').value.trim();
+  const amount=parseFloat(document.getElementById('adv-amount').value);
+  const reason=document.getElementById('adv-reason').value;
+  const note=document.getElementById('adv-note').value.trim();
+  const by=document.getElementById('adv-by').value.trim();
+  if(!date||!name||!amount||amount<=0) return;
+  if(!scriptUrl){openSettings();return;}
+  const fullNote=note?`${reason} — ${note}`:reason;
+  showReview('Cash Payment',[
+    {label:'Date',value:date},
+    {label:'Worker',value:name},
+    {label:'Reason',value:reason},
+    {label:'Note',value:note||'—'},
+    {label:'Amount',value:fmt(amount),big:true},
+    {label:'Recorded by',value:by||'—'},
+  ], async()=>{
+    const entry={id:'a'+Date.now()+Math.floor(Math.random()*9999),date,name,note:fullNote,amount,by};
+    entries.push({type:'advance',...entry}); render(); showSaving();
+    document.getElementById('adv-name').value=''; document.getElementById('adv-amount').value=''; document.getElementById('adv-note').value='';
+    document.getElementById('adv-reason').value='Wage payment';
+    setSyncNote('Saving...'); const res=await callScript('addAdvance',{entry}); setSyncNote(res.ok?'Saved':'Sync error'); showSaved(res.ok);
+  });
+});
+
+document.getElementById('save-income').addEventListener('click',async()=>{
+  const date=document.getElementById('income-date').value, crop=document.getElementById('income-crop').value;
+  const buyer=document.getElementById('income-buyer').value.trim(), quantity=parseFloat(document.getElementById('income-quantity').value)||0;
+  const unit=document.getElementById('income-unit').value, amount=parseFloat(document.getElementById('income-amount').value);
+  const by=document.getElementById('income-by').value.trim();
+  if(!date||!amount||amount<=0) return;
+  if(!scriptUrl){openSettings();return;}
+  ensureCropExists(crop);
+  showReview('Harvest Income',[
+    {label:'Date',value:date},
+    {label:'Crop',value:crop},
+    {label:'Buyer',value:buyer||'—'},
+    {label:'Quantity',value:quantity>0?`${quantity} ${unit}`:'—'},
+    {label:'Amount received',value:fmt(amount),big:true},
+    {label:'Recorded by',value:by||'—'},
+  ], async()=>{
+    const entry={id:'i'+Date.now()+Math.floor(Math.random()*9999),date,crop,buyer,quantity,unit,amount,by};
+    entries.push({type:'income',...entry}); render(); showSaving();
+    document.getElementById('income-buyer').value=''; document.getElementById('income-quantity').value=''; document.getElementById('income-amount').value='';
+    setSyncNote('Saving...'); const res=await callScript('addIncome',{entry}); setSyncNote(res.ok?'Saved':'Sync error'); showSaved(res.ok);
+  });
+});
+
+async function deleteEntry(id,type){
+  entries=entries.filter(e=>e.id!==id); render();
+  setSyncNote('Removing...'); const res=await callScript('deleteEntry',{id,entryType:type}); setSyncNote(res.ok?'Up to date':'Sync error');
+}
+
+// ===================== FILTERING =====================
+function getSummaryYears(){ return [...new Set(entries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort().reverse(); }
+
+function populateSummaryYear(){
+  const sel=document.getElementById('summary-year-filter'), years=getSummaryYears(), prev=sel.value;
+  const curYear=String(new Date().getFullYear());
+  sel.innerHTML='<option value="all">All time</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(prev)) sel.value=prev;
+  else if(years.includes(curYear)) sel.value=curYear;
+  else sel.value='all';
+}
+
+function filterEntries(list){
+  const yr=document.getElementById('summary-year-filter').value;
+  const crop=document.getElementById('crop-filter').value;
+  return list.filter(e=>{
+    const yMatch=yr==='all'||(e.date&&e.date.slice(0,4)===yr);
+    const cMatch=crop==='all'||e.crop===crop;
+    return yMatch&&cMatch;
+  });
+}
+
+document.getElementById('summary-year-filter').addEventListener('change',renderSummary);
+document.getElementById('crop-filter').addEventListener('change',renderSummary);
+document.getElementById('log-filter').addEventListener('change',renderLog);
+document.getElementById('log-crop-filter').addEventListener('change',renderLog);
+document.getElementById('year-filter').addEventListener('change',renderAnalytics);
+document.getElementById('analytics-crop-filter').addEventListener('change',renderAnalytics);
+
+// ===================== SUMMARY =====================
+let cumulativeChart=null;
+
+function renderSummary(){
+  populateSummaryYear();
+  const f=filterEntries(entries);
+  const expTotal=f.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const wagTotal=f.filter(e=>e.type==='wage').reduce((s,e)=>s+e.amount,0);
+  const incTotal=f.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const totalExp=expTotal+wagTotal, net=incTotal-totalExp;
+
+  // Overview card
+  document.getElementById('stat-net').textContent=fmt(net);
+  document.getElementById('stat-net').style.color=net>=0?'var(--leaf-dark)':'var(--berry)';
+  document.getElementById('stat-net').closest('.card').style.borderLeftColor=net>=0?'var(--leaf)':'var(--berry)';
+  const margin=incTotal>0?Math.round(net/incTotal*100):0;
+  document.getElementById('stat-margin').textContent=incTotal>0
+    ?(net>=0?`▲ ${margin}% profit margin`:`▼ ${Math.abs(margin)}% over budget`)
+    :'No income recorded yet';
+  document.getElementById('stat-income').textContent=fmt(incTotal);
+  document.getElementById('stat-total-exp').textContent=fmt(totalExp);
+  document.getElementById('stat-expenses').textContent=fmt(expTotal);
+  document.getElementById('stat-wages').textContent=fmt(wagTotal);
+
+  // Cumulative chart
+  const yr=document.getElementById('summary-year-filter').value;
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mExp=new Array(12).fill(0);
+  f.filter(e=>(e.type==='expense'||e.type==='wage')&&e.date).forEach(e=>{
+    const m=parseInt(e.date.slice(5,7),10)-1; if(m>=0&&m<12) mExp[m]+=e.amount;
+  });
+  // Build cumulative
+  let cum=0;
+  const cumData=mExp.map(v=>{ cum+=v; return Math.round(cum*100)/100; });
+  const incLine=new Array(12).fill(Math.round(incTotal*100)/100);
+  // Only show months up to current month if filtering current year
+  const now=new Date(), curYear=String(now.getFullYear()), maxM=yr===curYear?now.getMonth():11;
+  const labels=mn.slice(0,maxM+1);
+  const cumSlice=cumData.slice(0,maxM+1);
+  const incSlice=incLine.slice(0,maxM+1);
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  if(cumulativeChart) cumulativeChart.destroy();
+  cumulativeChart=new Chart(document.getElementById('cumulative-chart'),{
+    data:{
+      labels,
+      datasets:[
+        {type:'bar',label:'Cumulative expenses',data:cumSlice,
+          backgroundColor:cumSlice.map((v,i)=>v>incSlice[i]?'rgba(140,58,43,.85)':'rgba(140,58,43,.65)'),
+          borderRadius:4,order:2},
+        {type:'line',label:'Total income',data:incSlice,
+          borderColor:'#4a6741',borderWidth:2.5,borderDash:[6,3],
+          pointRadius:0,pointHoverRadius:0,fill:false,tension:0,order:1}
+      ]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{ticks:{autoSkip:false,maxRotation:0,font:{size:11}}},
+        y:{beginAtZero:true,ticks:{callback:fmtTick,font:{size:10}}}
+      },
+      plugins:{
+        legend:{display:false},
+        tooltip:{callbacks:{
+          label:ctx=>ctx.dataset.label===('Total income')?`Income: ${fmt(ctx.parsed.y)}`:`Cumulative: ${fmt(ctx.parsed.y)}`
+        }}
+      }
+    }
+  });
+
+  // Purchases by category
+  const catTotals={};
+  f.filter(e=>e.type==='expense').forEach(e=>{catTotals[e.category]=(catTotals[e.category]||0)+e.amount;});
+  document.getElementById('by-category').innerHTML=Object.keys(catTotals).length
+    ?Object.entries(catTotals).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`
+      <div class="cat-row">
+        <span>${escHtml(c)}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
+            <div style="width:${Math.round(a/expTotal*100)}%;height:100%;background:var(--soil-light);border-radius:3px;"></div>
+          </div>
+          <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state">No purchases recorded yet</p>';
+
+  // Income by crop
+  const incByCrop={};
+  f.filter(e=>e.type==='income'&&e.crop).forEach(e=>{incByCrop[e.crop]=(incByCrop[e.crop]||0)+e.amount;});
+  document.getElementById('by-income-crop').innerHTML=Object.keys(incByCrop).length
+    ?Object.entries(incByCrop).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`
+      <div class="cat-row">
+        <span>${escHtml(c)}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
+            <div style="width:${Math.round(a/incTotal*100)}%;height:100%;background:var(--leaf);border-radius:3px;"></div>
+          </div>
+          <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state">No income recorded yet</p>';
+}
+
+function renderWorkers(){
+  // Worker balance — all-time
+  const wkWages={},wkAdv={};
+  entries.filter(e=>e.type==='wage'&&e.name).forEach(e=>{wkWages[e.name]=(wkWages[e.name]||0)+e.amount;});
+  entries.filter(e=>e.type==='advance'&&e.name).forEach(e=>{wkAdv[e.name]=(wkAdv[e.name]||0)+e.amount;});
+  const allW=[...new Set([...Object.keys(wkWages),...Object.keys(wkAdv)])].sort();
+  document.getElementById('by-worker').innerHTML=allW.length
+    ?`<div style="display:grid;grid-template-columns:1fr 110px 110px 110px;gap:4px 8px;font-size:.75rem;color:var(--text-muted);padding-bottom:8px;border-bottom:2px solid var(--border);margin-bottom:4px;">
+        <span>Worker</span><span style="text-align:right;">Wages earned</span><span style="text-align:right;">Cash paid</span><span style="text-align:right;">Balance</span>
+      </div>`+allW.map(n=>{
+        const w=wkWages[n]||0,a=wkAdv[n]||0,bal=w-a;
+        return `<div style="display:grid;grid-template-columns:1fr 110px 110px 110px;gap:4px 8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem;align-items:center;">
+          <span style="font-weight:600;">${escHtml(n)}</span>
+          <span style="text-align:right;">${fmt(w)}</span>
+          <span style="text-align:right;color:var(--berry);">${fmt(a)}</span>
+          <span style="text-align:right;font-weight:700;color:${bal<0?'var(--berry)':'var(--leaf-dark)'};">${fmt(bal)}</span>
+        </div>`;
+      }).join('')
+    :'<p class="empty-state">No worker records yet</p>';
+
+  // Recent cash payments (last 10)
+  const payments=entries.filter(e=>e.type==='advance').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  document.getElementById('recent-payments').innerHTML=payments.length
+    ?payments.map(e=>`<div class="entry-row">
+        <div><p class="entry-title">${escHtml(e.name)}</p><p class="entry-meta">${escHtml(e.note||'—')} · ${e.date}</p></div>
+        <span class="entry-amount advance">${fmt(e.amount)}</span>
+      </div>`).join('')
+    :'<p class="empty-state">No cash payments yet</p>';
+
+  // Recent labour entries (last 10)
+  const wages=entries.filter(e=>e.type==='wage').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
+  document.getElementById('recent-wages').innerHTML=wages.length
+    ?wages.map(e=>`<div class="entry-row">
+        <div><p class="entry-title">${escHtml(e.name)}${e.task?' — '+escHtml(e.task):''}</p><p class="entry-meta">${escHtml(e.crop||'')} · ${e.date}</p></div>
+        <span class="entry-amount wage">${fmt(e.amount)}</span>
+      </div>`).join('')
+    :'<p class="empty-state">No labour entries yet</p>';
+}
+
+// ===================== LOG =====================
+function renderLog(){
+  const fv=document.getElementById('log-filter').value, cv=document.getElementById('log-crop-filter').value;
+  const getTs=id=>parseInt(id.replace(/^[a-z]+/,''))||0;
+  let list=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||getTs(b.id)-getTs(a.id));
+  if(fv!=='all') list=list.filter(e=>e.type===fv);
+  if(cv!=='all') list=list.filter(e=>e.crop===cv);
+  if(!list.length){ document.getElementById('log-list').innerHTML='<p class="empty-state">No entries to show</p>'; return; }
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  document.getElementById('log-list').innerHTML=list.map(e=>{
+    let title,label;
+    if(e.type==='expense'){title=e.desc||e.category;label=e.category;}
+    else if(e.type==='wage'){title=e.name+(e.task?' — '+e.task:'');label='Labour entry';}
+    else if(e.type==='advance'){title=e.name+(e.note?' — '+e.note:'');label='Cash payment';}
+    else{title=(e.buyer||'Sale')+(e.quantity?` — ${e.quantity} ${e.unit||''}`:'');label='Income';}
+    const sub=[label]; if(e.crop) sub.push(e.crop);
+    const meta=[e.date,e.by?'by '+e.by:null].filter(Boolean).join(' · ');
+    return `<div class="entry-row">
+      <div><p class="entry-title">${escHtml(title)}</p><p class="entry-meta">${escHtml(sub.join(' · '))} · ${escHtml(meta)}</p></div>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <span class="entry-amount ${e.type}">${fmt(e.amount)}</span>
+        ${isAdmin?`<button class="del-btn" data-id="${e.id}" data-type="${e.type}" aria-label="Delete">✕</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+  if(isAdmin) document.querySelectorAll('.del-btn').forEach(btn=>btn.addEventListener('click',()=>deleteEntry(btn.getAttribute('data-id'),btn.getAttribute('data-type'))));
+}
+
+// ===================== ANALYTICS =====================
+function getYears(){ return [...new Set(entries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort().reverse(); }
+
+// Chart type toggle
+document.getElementById('chart-type-bar').addEventListener('click',()=>setChartType('bar'));
+document.getElementById('chart-type-line').addEventListener('click',()=>setChartType('line'));
+function setChartType(type){
+  monthlyChartType=type;
+  ['bar','line'].forEach(t=>{
+    const btn=document.getElementById('chart-type-'+t);
+    btn.classList.toggle('active',t===type);
+    btn.style.background=t===type?'var(--berry-light)':'var(--white)';
+    btn.style.borderColor=t===type?'var(--berry)':'var(--border)';
+    btn.style.color=t===type?'var(--berry)':'var(--text)';
+    btn.style.fontWeight=t===type?'600':'400';
+  });
+  renderAnalytics();
+}
+
+function renderAnalytics(){
+  const yearSel=document.getElementById('year-filter'), years=getYears(), prevY=yearSel.value;
+  const curYear=String(new Date().getFullYear());
+  yearSel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('')||`<option value="${curYear}">${curYear}</option>`;
+  if(years.includes(prevY))yearSel.value=prevY; else if(years.includes(curYear))yearSel.value=curYear; else if(years.length)yearSel.value=years[0];
+  const yr=yearSel.value, cv=document.getElementById('analytics-crop-filter').value;
+  let ye=entries.filter(e=>e.date&&e.date.slice(0,4)===yr);
+  if(cv!=='all') ye=ye.filter(e=>e.crop===cv);
+
+  const yExp=ye.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+  const yWag=ye.filter(e=>e.type==='wage').reduce((s,e)=>s+e.amount,0);
+  const yInc=ye.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+  const yNet=yInc-yExp-yWag;
+  document.getElementById('year-stat-cost').textContent=fmt(yExp+yWag);
+  document.getElementById('year-stat-income').textContent=fmt(yInc);
+  document.getElementById('year-stat-net').textContent=fmt(yNet);
+  document.getElementById('year-net-card').className='stat-card '+(yNet>=0?'net-pos':'net-neg');
+
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mExp=new Array(12).fill(0),mWag=new Array(12).fill(0),mInc=new Array(12).fill(0);
+  ye.forEach(e=>{
+    const m=parseInt(e.date.slice(5,7),10)-1; if(m<0||m>11)return;
+    if(e.type==='expense')mExp[m]+=e.amount;
+    else if(e.type==='wage')mWag[m]+=e.amount;
+    else if(e.type==='income')mInc[m]+=e.amount;
+  });
+  const r2=v=>Math.round(v*100)/100;
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  const tooltipFmt=ctx=>`${ctx.dataset.label}: ${fmt(ctx.parsed.y??ctx.parsed.x)}`;
+
+  // ---- Monthly breakdown (bar or line) ----
+  if(monthlyChart)monthlyChart.destroy();
+  const isLine=monthlyChartType==='line';
+  monthlyChart=new Chart(document.getElementById('monthly-chart'),{
+    type:monthlyChartType,
+    data:{labels:mn,datasets:[
+      {label:'Purchases',data:mExp.map(r2),backgroundColor:'rgba(140,106,43,.8)',borderColor:'#8c6a2b',tension:.35,fill:false,pointRadius:isLine?4:0,pointHoverRadius:6},
+      {label:'Wages',data:mWag.map(r2),backgroundColor:'rgba(140,58,43,.8)',borderColor:'#8c3a2b',tension:.35,fill:false,pointRadius:isLine?4:0,pointHoverRadius:6},
+      {label:'Income',data:mInc.map(r2),backgroundColor:'rgba(74,103,65,.8)',borderColor:'#4a6741',tension:.35,fill:false,pointRadius:isLine?4:0,pointHoverRadius:6}
+    ]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{autoSkip:false,maxRotation:0}},y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:tooltipFmt}}}
+    }
+  });
+
+  // ---- Net profit/loss per month (green/red bars) ----
+  const mNet=mn.map((_,i)=>r2(mInc[i]-mExp[i]-mWag[i]));
+  if(netTrendChart)netTrendChart.destroy();
+  netTrendChart=new Chart(document.getElementById('net-trend-chart'),{
+    type:'bar',
+    data:{labels:mn,datasets:[{
+      label:'Net',data:mNet,
+      backgroundColor:mNet.map(v=>v>=0?'rgba(74,103,65,.85)':'rgba(140,58,43,.85)'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{autoSkip:false,maxRotation:0}},y:{ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Net: ${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  // ---- Purchases by category (horizontal) ----
+  const catTot={};
+  ye.filter(e=>e.type==='expense').forEach(e=>{catTot[e.category]=(catTot[e.category]||0)+e.amount;});
+  const catL=Object.keys(catTot).sort((a,b)=>catTot[b]-catTot[a]),catV=catL.map(k=>r2(catTot[k]));
+  const catH=Math.max(160,catL.length*44+60);
+  document.getElementById('category-chart-wrap').style.height=catH+'px';
+  if(categoryChart)categoryChart.destroy();
+  categoryChart=new Chart(document.getElementById('category-chart'),{
+    type:'bar',
+    data:{labels:catL.length?catL:['No purchases'],datasets:[{data:catL.length?catV:[0],backgroundColor:'#6b5544',borderRadius:4}]},
+    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
+      scales:{x:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.x)}`}}}
+    }
+  });
+
+  // ---- Income by crop ----
+  const icTot={};
+  ye.filter(e=>e.type==='income').forEach(e=>{icTot[e.crop||'Other']=(icTot[e.crop||'Other']||0)+e.amount;});
+  const icL=Object.keys(icTot),icV=icL.map(k=>r2(icTot[k]));
+  if(incomeCropChart)incomeCropChart.destroy();
+  incomeCropChart=new Chart(document.getElementById('income-crop-chart'),{
+    type:'bar',
+    data:{labels:icL.length?icL:['No income'],datasets:[{data:icL.length?icV:[0],backgroundColor:'#34492e',borderRadius:4}]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+  renderYearComparison();
+}
+
+// ===================== EDIT LOCK =====================
+async function acquireEditLock(){
+  if(!currentUser) return;
+  const res=await callScriptJSONP({action:'acquireLock',user:currentUser.name});
+  if(res&&res.acquired===false) showLockWarning(res.lockedBy,res.lockedAt);
+  else { hideLockWarning(); if(lockRenewInterval)clearInterval(lockRenewInterval); lockRenewInterval=setInterval(()=>callScriptJSONP({action:'renewLock',user:currentUser.name}),60000); }
+}
+async function releaseEditLock(){
+  if(lockRenewInterval){clearInterval(lockRenewInterval);lockRenewInterval=null;}
+  if(currentUser) await callScriptJSONP({action:'releaseLock',user:currentUser.name});
+  hideLockWarning();
+}
+function showLockWarning(lockedBy,lockedAt){
+  const el=document.getElementById('lock-warning');
+  document.getElementById('lock-warning-name').textContent=lockedBy||'Another user';
+  const mins=lockedAt?Math.floor((Date.now()-parseInt(lockedAt))/60000):0;
+  document.getElementById('lock-warning-time').textContent=mins>0?`(${mins} min ago)`:'(just now)';
+  el.style.display='block';
+}
+function hideLockWarning(){ document.getElementById('lock-warning').style.display='none'; }
+window.addEventListener('beforeunload',()=>{ if(currentUser&&currentTab==='add'){ const url=scriptUrl+'?action=releaseLock&user='+encodeURIComponent(currentUser.name)+'&callback=_x'; new Image().src=url; } });
+
+// ===================== USER ADMIN =====================
+function openUserAdmin(){ openSettings(); }
+document.getElementById('close-user-admin').addEventListener('click',()=>document.getElementById('user-admin-overlay').classList.add('hidden'));
+
+function renderUserList(){
+  document.getElementById('user-list-wrap').innerHTML=`<table class="user-table">
+    <thead><tr><th>Name</th><th>Role</th><th>Reset password</th><th>Remove</th></tr></thead>
+    <tbody>${sheetUsers.map(u=>`<tr>
+      <td><strong>${escHtml(u.name)}</strong></td>
+      <td>${escHtml(u.role)}</td>
+      <td><div style="display:flex;gap:6px;"><input type="password" placeholder="New password" id="rp-${escHtml(u.name)}" style="width:110px;padding:6px 8px;font-size:.82rem;">
+        <button onclick="window.resetPw('${escHtml(u.name)}')" style="padding:6px 10px;font-size:.82rem;">Set</button></div></td>
+      <td>${u.name==='Arjun'?'<span style="font-size:.8rem;color:var(--text-muted);">Admin</span>':`<button class="danger" onclick="window.removeUser('${escHtml(u.name)}')" style="padding:6px 10px;font-size:.82rem;">Remove</button>`}</td>
+    </tr>`).join('')}</tbody></table>`;
+}
+
+window.resetPw=async function(name){
+  const input=document.getElementById('rp-'+name), newPass=input.value.trim();
+  if(!newPass){showAdminMsg('Enter a new password first.',false);return;}
+  const res=await callScript('updateUserHash',{name,hash:hashPass(newPass)});
+  if(res.ok){ const u=sheetUsers.find(u=>u.name===name); if(u) u.hash=hashPass(newPass); input.value=''; showAdminMsg(`Password updated for ${name}.`,true); }
+  else showAdminMsg('Failed: '+(res.error||'unknown'),false);
+};
+window.removeUser=async function(name){
+  if(name==='Arjun'||!confirm(`Remove "${name}"?`)) return;
+  const res=await callScript('removeUser',{name});
+  if(res.ok){ sheetUsers=sheetUsers.filter(u=>u.name!==name); renderUserList(); showAdminMsg(`${name} removed.`,true); }
+  else showAdminMsg('Failed: '+(res.error||'unknown'),false);
+};
+document.getElementById('btn-add-user').addEventListener('click',async()=>{
+  const name=document.getElementById('new-user-name').value.trim(), pass=document.getElementById('new-user-pass').value, role=document.getElementById('new-user-role').value;
+  if(!name||!pass){showAdminMsg('Name and password required.',false);return;}
+  if(sheetUsers.find(u=>u.name.toLowerCase()===name.toLowerCase())){showAdminMsg('User already exists.',false);return;}
+  const res=await callScript('addUser',{name,role,hash:hashPass(pass)});
+  if(res.ok){ sheetUsers.push({name,role,hash:hashPass(pass)}); renderUserList(); document.getElementById('new-user-name').value=''; document.getElementById('new-user-pass').value=''; showAdminMsg(`${name} added.`,true); }
+  else showAdminMsg('Failed: '+(res.error||'unknown'),false);
+});
+function showAdminMsg(msg,ok){ const el=document.getElementById('user-admin-msg'); el.textContent=msg; el.style.color=ok?'var(--leaf-dark)':'var(--berry)'; el.style.display='block'; setTimeout(()=>el.style.display='none',3500); }
+
+function renderWorkerNameList(){
+  const workers=[...new Set(entries.filter(e=>(e.type==='wage'||e.type==='advance')&&e.name).map(e=>e.name))].sort();
+  const el=document.getElementById('worker-name-list');
+  if(!workers.length){el.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);">No workers recorded yet.</p>';return;}
+  el.innerHTML=workers.map(n=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+    <input type="text" value="${escHtml(n)}" id="wr-${escHtml(n).replace(/\s/g,'_')}" style="flex:1;padding:8px 10px;font-size:.9rem;">
+    <button onclick="window.renameWorker('${escHtml(n)}')" style="padding:8px 12px;font-size:.85rem;white-space:nowrap;">Rename</button>
+  </div>`).join('');
+}
+window.renameWorker=async function(oldName){
+  const safeId=oldName.replace(/\s/g,'_'), input=document.getElementById('wr-'+safeId);
+  if(!input) return;
+  const newName=input.value.trim(), msgEl=document.getElementById('worker-rename-msg');
+  if(!newName||newName===oldName) return;
+  entries.forEach(e=>{if((e.type==='wage'||e.type==='advance')&&e.name===oldName)e.name=newName;});
+  knownWorkers.delete(oldName); knownWorkers.add(newName);
+  renderWorkerNameList(); renderWorkerSuggestions(); renderPayWorkerList(); render();
+  msgEl.textContent=`Renaming "${oldName}" → "${newName}" in Google Sheet...`; msgEl.style.color='var(--text-muted)'; msgEl.style.display='block';
+  const res=await callScript('renameWorker',{oldName,newName});
+  msgEl.textContent=res.ok?`"${oldName}" renamed to "${newName}".`:`Rename failed: ${res.error||'unknown'}`;
+  msgEl.style.color=res.ok?'var(--leaf-dark)':'var(--berry)';
+  setTimeout(()=>msgEl.style.display='none',5000);
+};
+
+function renderCropNameList(){
+  const el=document.getElementById('crop-name-list');
+  if(!el) return;
+  if(!crops.length){el.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);">No crops yet. Type a new crop name in any entry form to add one.</p>';return;}
+  el.innerHTML=crops.map(c=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+    <input type="text" value="${escHtml(c)}" id="cr-${escHtml(c).replace(/\s/g,'_')}" style="flex:1;padding:8px 10px;font-size:.9rem;">
+    <button onclick="window.renameCrop('${escHtml(c)}')" style="padding:8px 12px;font-size:.85rem;white-space:nowrap;">Rename</button>
+    <button onclick="window.removeCropAdmin('${escHtml(c)}')" class="danger" style="padding:8px 10px;font-size:.85rem;">Remove</button>
+  </div>`).join('');
+}
+window.renameCrop=async function(oldName){
+  const safeId=oldName.replace(/\s/g,'_'), input=document.getElementById('cr-'+safeId);
+  if(!input) return;
+  const newName=input.value.trim(), msgEl=document.getElementById('crop-manage-msg');
+  if(!newName||newName===oldName) return;
+  // Update entries locally
+  entries.forEach(e=>{if(e.crop===oldName)e.crop=newName;});
+  const idx=crops.indexOf(oldName); if(idx>-1) crops[idx]=newName;
+  renderCropSelects(); renderCropNameList(); render();
+  msgEl.textContent=`Renaming "${oldName}" → "${newName}"...`; msgEl.style.color='var(--text-muted)'; msgEl.style.display='block';
+  // Use removeCrop + addCrop since there's no renameCrop action in AppsScript
+  await callScript('removeCrop',{crop:oldName});
+  const res=await callScript('addCrop',{crop:newName});
+  msgEl.textContent=res.ok?`"${oldName}" renamed to "${newName}".`:`Failed: ${res.error||'unknown'}`;
+  msgEl.style.color=res.ok?'var(--leaf-dark)':'var(--berry)';
+  setTimeout(()=>msgEl.style.display='none',4000);
+};
+window.removeCropAdmin=async function(crop){
+  if(!confirm(`Remove "${crop}"? This won't delete existing entries, just removes it from suggestions.`)) return;
+  const msgEl=document.getElementById('crop-manage-msg');
+  crops=crops.filter(c=>c!==crop); renderCropSelects(); renderCropNameList(); render();
+  msgEl.textContent=`Removing "${crop}"...`; msgEl.style.color='var(--text-muted)'; msgEl.style.display='block';
+  const res=await callScript('removeCrop',{crop});
+  msgEl.textContent=res.ok?`"${crop}" removed.`:`Failed: ${res.error||'unknown'}`;
+  msgEl.style.color=res.ok?'var(--leaf-dark)':'var(--berry)';
+  setTimeout(()=>msgEl.style.display='none',4000);
+};
+
+function renderHomeCatNameList(){
+  const el=document.getElementById('home-cat-name-list');
+  if(!el) return;
+  if(!homeCategories.length){el.innerHTML='<p style="font-size:.85rem;color:var(--text-muted);">No categories yet.</p>';return;}
+  el.innerHTML=[...homeCategories].sort().map(c=>`<div style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+    <input type="text" value="${escHtml(c)}" id="hc-${escHtml(c).replace(/\s/g,'_').replace(/\//g,'-')}" style="flex:1;padding:8px 10px;font-size:.9rem;">
+    <button onclick="window.renameHomeCat('${escHtml(c)}')" style="padding:8px 12px;font-size:.85rem;white-space:nowrap;">Rename</button>
+    <button onclick="window.removeHomeCat('${escHtml(c)}')" class="danger" style="padding:8px 10px;font-size:.85rem;">Remove</button>
+  </div>`).join('');
+}
+window.renameHomeCat=function(oldName){
+  const safeId=oldName.replace(/\s/g,'_').replace(/\//g,'-'), input=document.getElementById('hc-'+safeId);
+  if(!input) return;
+  const newName=input.value.trim(), msgEl=document.getElementById('home-cat-manage-msg');
+  if(!newName||newName===oldName) return;
+  homeEntries.forEach(e=>{if(e.category===oldName)e.category=newName;});
+  const idx=homeCategories.indexOf(oldName); if(idx>-1) homeCategories[idx]=newName;
+  renderHomeCatNameList(); renderHomeCatSuggestions();
+  msgEl.textContent=`"${oldName}" renamed to "${newName}".`; msgEl.style.color='var(--leaf-dark)'; msgEl.style.display='block';
+  setTimeout(()=>msgEl.style.display='none',3000);
+};
+window.removeHomeCat=function(cat){
+  if(!confirm(`Remove "${cat}"? Won't delete existing entries.`)) return;
+  homeCategories=homeCategories.filter(c=>c!==cat);
+  renderHomeCatNameList(); renderHomeCatSuggestions();
+  const msgEl=document.getElementById('home-cat-manage-msg');
+  msgEl.textContent=`"${cat}" removed.`; msgEl.style.color='var(--leaf-dark)'; msgEl.style.display='block';
+  setTimeout(()=>msgEl.style.display='none',3000);
+};
+
+// ===================== YEAR COMPARISON =====================
+let compareChart=null;
+
+function renderYearComparison(){
+  const years=getYears().sort(); // ascending
+  if(!years.length) return;
+
+  // Populate from/to selects
+  ['compare-year-a','compare-year-b'].forEach((id,i)=>{
+    const sel=document.getElementById(id), prev=sel.value;
+    sel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('');
+    if(years.includes(prev)) sel.value=prev;
+    else sel.value=i===0?years[0]:years[years.length-1];
+  });
+
+  const yrFrom=document.getElementById('compare-year-a').value;
+  const yrTo=document.getElementById('compare-year-b').value;
+  const cv=document.getElementById('analytics-crop-filter').value;
+
+  // Get all years in range
+  const rangeYears=years.filter(y=>y>=yrFrom&&y<=yrTo);
+  if(!rangeYears.length) return;
+
+  function yearStats(yr){
+    let ye=entries.filter(e=>e.date&&e.date.slice(0,4)===yr);
+    if(cv!=='all') ye=ye.filter(e=>e.crop===cv);
+    const exp=ye.filter(e=>e.type==='expense').reduce((s,e)=>s+e.amount,0);
+    const wag=ye.filter(e=>e.type==='wage').reduce((s,e)=>s+e.amount,0);
+    const inc=ye.filter(e=>e.type==='income').reduce((s,e)=>s+e.amount,0);
+    return {exp,wag,inc,net:inc-exp-wag,totalExp:exp+wag};
+  }
+
+  const stats=rangeYears.map(yr=>({yr,...yearStats(yr)}));
+  const r2=v=>Math.round(v*100)/100;
+
+  // Stat cards — one per year
+  document.getElementById('compare-stats').innerHTML=stats.map(s=>`
+    <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+      <p style="font-size:.72rem;font-weight:700;color:var(--soil);margin:0 0 6px;letter-spacing:.5px;">${s.yr}</p>
+      <p style="font-size:.75rem;color:var(--leaf-dark);margin:0 0 2px;font-weight:600;">${fmt(s.inc)}</p>
+      <p style="font-size:.72rem;color:var(--berry);margin:0 0 2px;">${fmt(s.totalExp)}</p>
+      <p style="font-size:.75rem;font-weight:700;color:${s.net>=0?'var(--leaf-dark)':'var(--berry)'};margin:0;">${fmt(s.net)}</p>
+    </div>`).join('');
+
+  // Multi-year bar chart — income and expenses per year
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  if(compareChart) compareChart.destroy();
+  compareChart=new Chart(document.getElementById('compare-chart'),{
+    type:'bar',
+    data:{
+      labels:rangeYears,
+      datasets:[
+        {label:'Income',data:stats.map(s=>r2(s.inc)),backgroundColor:'rgba(74,103,65,.85)',borderRadius:4},
+        {label:'Expenses',data:stats.map(s=>r2(s.totalExp)),backgroundColor:'rgba(140,58,43,.75)',borderRadius:4},
+        {label:'Net profit',data:stats.map(s=>r2(s.net)),backgroundColor:stats.map(s=>s.net>=0?'rgba(74,103,65,.3)':'rgba(140,58,43,.3)'),borderRadius:4},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  document.getElementById('compare-legend').innerHTML=`
+    <span><span style="display:inline-block;width:12px;height:10px;background:rgba(74,103,65,.85);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Income</span>
+    <span><span style="display:inline-block;width:12px;height:10px;background:rgba(140,58,43,.75);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Expenses</span>
+    <span><span style="display:inline-block;width:12px;height:10px;background:rgba(74,103,65,.3);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Net profit</span>`;
+}
+
+document.getElementById('compare-year-a').addEventListener('change',renderYearComparison);
+document.getElementById('compare-year-b').addEventListener('change',renderYearComparison);
+
+// ===================== RENDER DISPATCHER =====================
+function render(){
+  renderWorkerSuggestions();
+  if(currentTab==='summary') renderSummary();
+  if(currentTab==='log') renderLog();
+  if(currentTab==='workers') renderWorkers();
+  if(currentTab==='analytics') renderAnalytics();
+}
+
+// ===================== PWA =====================
+(function(){
+  const manifest={name:'VAYAL',short_name:'VAYAL',description:'Track farm expenses, wages, and income',start_url:'.',display:'standalone',background_color:'#f7f2e9',theme_color:'#3d2f24',orientation:'portrait-primary',
+    icons:[{src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%233d2f24'/><text y='130' x='96' text-anchor='middle' font-size='120' font-family='serif'>🌿</text></svg>",sizes:'192x192',type:'image/svg+xml'},
+           {src:"data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%233d2f24'/><text y='360' x='256' text-anchor='middle' font-size='320' font-family='serif'>🌿</text></svg>",sizes:'512x512',type:'image/svg+xml'}]};
+  const blob=new Blob([JSON.stringify(manifest)],{type:'application/json'});
+  document.getElementById('pwa-manifest').href=URL.createObjectURL(blob);
+})();
+if('serviceWorker' in navigator){
+  const sw=`
+    const C='vayal-v2';
+    self.addEventListener('install',e=>{
+      e.waitUntil(caches.open(C).then(c=>c.add('https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js').catch(()=>{})));
+      self.skipWaiting();
+    });
+    self.addEventListener('activate',e=>{
+      e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));
+      self.clients.claim();
+    });
+    self.addEventListener('fetch',e=>{
+      if(e.request.url.includes('chart.umd.js')){
+        e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{
+          caches.open(C).then(c=>c.put(e.request,res.clone())); return res;
+        })));
+      }
+    });
+    self.addEventListener('message',e=>{
+      if(e.data==='skipWaiting') self.skipWaiting();
+    });
+  `;
+  const swBlob=new Blob([sw],{type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(swBlob)).then(reg=>{
+    // Check for updates every time app is opened
+    reg.update();
+    reg.addEventListener('updatefound',()=>{
+      const newSW=reg.installing;
+      newSW.addEventListener('statechange',()=>{
+        if(newSW.state==='installed'&&navigator.serviceWorker.controller){
+          // New version available — show update banner
+          const banner=document.createElement('div');
+          banner.style.cssText='position:fixed;bottom:0;left:0;right:0;background:var(--leaf-dark);color:#fff;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;z-index:9999;font-size:.9rem;box-shadow:0 -2px 12px rgba(0,0,0,.2);';
+          banner.innerHTML=`<span>🌿 A new version of VAYAL is available</span><button onclick="window.location.reload()" style="background:#fff;color:var(--leaf-dark);border:none;border-radius:6px;padding:7px 14px;font-weight:700;cursor:pointer;font-size:.85rem;">Update now</button>`;
+          document.body.appendChild(banner);
+          newSW.postMessage('skipWaiting');
+        }
+      });
+    });
+  }).catch(()=>{});
+}
+
+// ===================== HOME SECTION =====================
+let homeEntries = [];
+let homeCategories = ['Groceries','Vegetables & fruits','Milk & dairy','Electricity','Water','Phone/internet','Gas/LPG','EMI','Loan payment','Insurance','Medical/doctor','Medicines','Car fuel','Car service/repair','Car insurance','Car EMI','Parking/toll','Education','Clothing','Repairs/maintenance','Other'];
+let currentHomeTab = 'home-summary';
+
+function renderHomeCatSuggestions(){
+  const cats=[...new Set([...homeCategories,...homeEntries.map(e=>e.category).filter(Boolean)])].sort();
+  document.getElementById('home-cat-suggestions').innerHTML=cats.map(c=>`<option value="${escHtml(c)}">`).join('');
+  const logSel=document.getElementById('home-log-filter'), prev=logSel.value;
+  logSel.innerHTML='<option value="all">All categories</option>'+cats.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  if([...logSel.options].some(o=>o.value===prev)) logSel.value=prev; else logSel.value='all';
+}
+
+function ensureHomeCatExists(cat){
+  if(!cat) return;
+  if(!homeCategories.some(c=>c.toLowerCase()===cat.toLowerCase())) homeCategories.push(cat);
+  renderHomeCatSuggestions();
+}
+
+document.querySelectorAll('[data-home-tab]').forEach(btn=>btn.addEventListener('click',()=>switchHomeTab(btn.dataset.homeTab)));
+function switchHomeTab(tab){
+  currentHomeTab=tab;
+  document.querySelectorAll('[data-home-tab]').forEach(b=>b.classList.toggle('active',b.dataset.homeTab===tab));
+  ['home-summary','home-add','home-log'].forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
+  renderHomeSection();
+}
+
+function renderHomeSection(){
+  if(currentHomeTab==='home-summary') renderHomeSummary();
+  if(currentHomeTab==='home-log') renderHomeLog();
+}
+
+let homeMonthlyChart=null;
+
+function renderHomeSummary(){
+  const curYear=String(new Date().getFullYear());
+  const curM=new Date().toISOString().slice(0,7);
+
+  // Populate year filter
+  const years=[...new Set(homeEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort().reverse();
+  const yrSel=document.getElementById('home-year-filter'), prevY=yrSel.value;
+  yrSel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('')||`<option value="${curYear}">${curYear}</option>`;
+  if(years.includes(prevY)) yrSel.value=prevY;
+  else if(years.includes(curYear)) yrSel.value=curYear;
+  else if(years.length) yrSel.value=years[0];
+  const yr=yrSel.value;
+
+  // Populate month filter
+  const months=[...new Set(homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).map(e=>e.date.slice(0,7)))].sort().reverse();
+  const mSel=document.getElementById('home-month-filter'), prevM=mSel.value;
+  mSel.innerHTML='<option value="all">All months</option>'+months.map(m=>`<option value="${m}">${monthLabelHome(m)}</option>`).join('');
+  if(months.includes(prevM)) mSel.value=prevM;
+  else if(months.includes(curM)) mSel.value=curM;
+  else mSel.value='all';
+  const mf=mSel.value;
+
+  // Filter for selected month
+  const filtered=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr&&(mf==='all'||e.date.slice(0,7)===mf));
+  const total=filtered.reduce((s,e)=>s+e.amount,0);
+  document.getElementById('home-stat-total').textContent=fmt(total);
+
+  // By category (filtered)
+  const cats={};
+  filtered.forEach(e=>{cats[e.category]=(cats[e.category]||0)+e.amount;});
+  document.getElementById('home-by-category').innerHTML=Object.keys(cats).length
+    ?Object.entries(cats).sort((a,b)=>b[1]-a[1]).map(([c,a])=>`
+      <div class="cat-row">
+        <span>${escHtml(c)}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
+            <div style="width:${total>0?Math.round(a/total*100):0}%;height:100%;background:var(--berry);border-radius:3px;"></div>
+          </div>
+          <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state" style="padding:1rem 0;">No expenses recorded yet</p>';
+
+  // Monthly chart (full year)
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mTotals=new Array(12).fill(0);
+  homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).forEach(e=>{
+    const m=parseInt(e.date.slice(5,7),10)-1; if(m>=0&&m<12) mTotals[m]+=e.amount;
+  });
+  const r2=v=>Math.round(v*100)/100;
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  if(homeMonthlyChart) homeMonthlyChart.destroy();
+  homeMonthlyChart=new Chart(document.getElementById('home-monthly-chart'),{
+    type:'bar',
+    data:{labels:mn,datasets:[{
+      label:'Expenses',data:mTotals.map(r2),
+      backgroundColor:mTotals.map((_,i)=>mf==='all'||mn[i]===mn[new Date(mf+'-01').getMonth()]?'rgba(140,58,43,.85)':'rgba(140,58,43,.3)'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{autoSkip:false,maxRotation:0,font:{size:11}}},y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  // Top categories for the year
+  const yearCats={};
+  homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).forEach(e=>{yearCats[e.category]=(yearCats[e.category]||0)+e.amount;});
+  const yearTotal=Object.values(yearCats).reduce((s,v)=>s+v,0);
+  document.getElementById('home-top-categories').innerHTML=Object.keys(yearCats).length
+    ?Object.entries(yearCats).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,a])=>`
+      <div class="cat-row">
+        <span>${escHtml(c)}</span>
+        <div style="display:flex;align-items:center;gap:10px;">
+          <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
+            <div style="width:${yearTotal>0?Math.round(a/yearTotal*100):0}%;height:100%;background:var(--berry);border-radius:3px;"></div>
+          </div>
+          <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state">No expenses this year</p>';
+}
+
+function monthLabelHome(m){ const[y,mo]=m.split('-'); return new Date(+y,+mo-1).toLocaleString(undefined,{month:'long',year:'numeric'}); }
+
+function renderHomeLog(){
+  const fv=document.getElementById('home-log-filter').value;
+  let list=homeEntries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
+  if(fv!=='all') list=list.filter(e=>e.category===fv);
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  document.getElementById('home-log-list').innerHTML=list.length
+    ?list.map(e=>`<div class="entry-row">
+        <div><p class="entry-title">${escHtml(e.desc||e.category)}</p><p class="entry-meta">${escHtml(e.category)} · ${e.date}${e.by?' · by '+escHtml(e.by):''}</p></div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="entry-amount expense">${fmt(e.amount)}</span>
+          ${isAdmin?`<button class="del-btn" data-hid="${e.id}" aria-label="Delete">✕</button>`:''}
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state">No entries yet</p>';
+  if(isAdmin) document.querySelectorAll('.del-btn[data-hid]').forEach(btn=>btn.addEventListener('click',()=>{
+    homeEntries=homeEntries.filter(e=>e.id!==btn.getAttribute('data-hid'));
+    callScript('deleteEntry',{id:btn.getAttribute('data-hid'),entryType:'household'});
+    renderHomeSection();
+  }));
+}
+
+// Set today's date for home expense form
+document.getElementById('home-exp-date').value=todayStr();
+
+document.getElementById('home-month-filter').addEventListener('change',renderHomeSummary);
+document.getElementById('home-year-filter').addEventListener('change',renderHomeSummary);
+document.getElementById('home-log-filter').addEventListener('change',renderHomeLog);
+
+document.getElementById('save-home-expense').addEventListener('click',async()=>{
+  const date=document.getElementById('home-exp-date').value;
+  const category=document.getElementById('home-exp-category').value;
+  const desc=document.getElementById('home-exp-desc').value.trim();
+  const amount=parseFloat(document.getElementById('home-exp-amount').value);
+  const by=document.getElementById('home-exp-by').value.trim();
+  if(!date||!amount||amount<=0||!category) return;
+  if(!scriptUrl){openSettings();return;}
+  ensureHomeCatExists(category);
+  showReview('Household Expense',[
+    {label:'Date',value:date},
+    {label:'Category',value:category},
+    {label:'Description',value:desc||'—'},
+    {label:'Amount',value:fmt(amount),big:true},
+    {label:'Recorded by',value:by||'—'},
+  ],async()=>{
+    const entry={id:'h'+Date.now()+Math.floor(Math.random()*9999),date,category,desc,amount,by};
+    homeEntries.push(entry);
+    document.getElementById('home-exp-category').value='';
+    document.getElementById('home-exp-desc').value='';
+    document.getElementById('home-exp-amount').value='';
+    renderHomeSection(); renderHomeCatSuggestions();
+    showSaving();
+    const res=await callScript('addHousehold',{entry});
+    showSaved(res.ok);
+  });
+});
+
+// ===================== INIT =====================
+const saved=getSession();
+if(saved){ currentUser=saved; launchApp(); }
+else { initLoginScreen(); }
+
+})();
+</script>
+</body>
+</html>

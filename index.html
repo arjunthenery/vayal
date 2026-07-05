@@ -875,9 +875,22 @@ const setSyncNote = t => {
 function hashPass(p){ let h=0; for(let i=0;i<p.length;i++){h=Math.imul(31,h)+p.charCodeAt(i)|0;} return h.toString(36); }
 
 // ===================== USER SYSTEM =====================
-function getSession(){ try{ return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch(e){ return null; } }
-function setSession(u){ sessionStorage.setItem(SESSION_KEY, JSON.stringify({name:u.name,role:u.role})); }
-function clearSession(){ sessionStorage.removeItem(SESSION_KEY); }
+function getSessionExpiry(){
+  const now=new Date(), expiry=new Date(now);
+  expiry.setHours(1,0,0,0);
+  if(now>=expiry) expiry.setDate(expiry.getDate()+1);
+  return expiry.getTime();
+}
+function getSession(){
+  try{
+    const s=JSON.parse(localStorage.getItem(SESSION_KEY));
+    if(!s) return null;
+    if(Date.now()>s.expiry){ localStorage.removeItem(SESSION_KEY); return null; }
+    return s;
+  }catch(e){ return null; }
+}
+function setSession(u){ localStorage.setItem(SESSION_KEY,JSON.stringify({name:u.name,role:u.role,expiry:getSessionExpiry()})); }
+function clearSession(){ localStorage.removeItem(SESSION_KEY); }
 
 function populateLoginDropdown(){
   const sel = document.getElementById('login-user');
@@ -1411,6 +1424,7 @@ document.getElementById('save-income').addEventListener('click',async()=>{
 });
 
 async function deleteEntry(id,type){
+  if(!confirm('Delete this entry? This cannot be undone.')) return;
   entries=entries.filter(e=>e.id!==id); render();
   setSyncNote('Removing...'); const res=await callScript('deleteEntry',{id,entryType:type}); setSyncNote(res.ok?'Up to date':'Sync error');
 }
@@ -2149,6 +2163,7 @@ function renderHomeLog(){
       </div>`).join('')
     :'<p class="empty-state">No entries yet</p>';
   if(isAdmin) document.querySelectorAll('.del-btn[data-hid]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
     homeEntries=homeEntries.filter(e=>e.id!==btn.getAttribute('data-hid'));
     callScript('deleteEntry',{id:btn.getAttribute('data-hid'),entryType:'household'});
     renderHomeSection();

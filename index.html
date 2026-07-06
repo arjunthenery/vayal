@@ -1002,8 +1002,8 @@ function launchApp(){
     return;
   }
   showLanding();
-  if(pendingSheetData){ applySheetData(pendingSheetData); pendingSheetData=null; hideConnecting(); setSyncNote('Up to date');  }
-  else { loadFromSheet(); }
+  if(pendingSheetData){ applySheetData(pendingSheetData); pendingSheetData=null; hideConnecting(); setSyncNote('Up to date'); }
+  else { showConnecting(); loadFromSheet(); }
 }
 
 function showLanding(){
@@ -1175,6 +1175,7 @@ function applySheetData(data){
   renderCropSelects();
   renderWorkerSuggestions();
   renderPayWorkerList();
+  renderHomeCatSuggestions();
   render();
   if(currentSection==='home') renderHomeSection();
 }

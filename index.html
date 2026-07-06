@@ -17,7 +17,9 @@
   --cream:#f7f2e9; --cream-dark:#ece3d2;
   --leaf:#4a6741; --leaf-dark:#34492e;
   --berry:#8c3a2b; --berry-light:#f0ddd6;
-  --gold:#8c6a2b;
+  --teal:#2a9d8f;
+  --teal-dark:#0d3d40;
+  --teal-light:#e0f2f1;
   --border:#d8cdb8; --text:#2b2118; --text-muted:#6b6052; --white:#fffdf9;
 }
 *{box-sizing:border-box;}
@@ -90,6 +92,10 @@ main{max-width:960px;margin:0 auto;padding:1.5rem;}
 .tab{background:none;border:none;padding:10px 16px;font-size:.9rem;cursor:pointer;color:var(--text-muted);border-bottom:3px solid transparent;margin-bottom:-2px;white-space:nowrap;border-radius:8px 8px 0 0;transition:background .15s,color .15s;}
 .tab:hover{background:var(--cream);color:var(--text);}
 .tab.active{color:var(--leaf-dark);border-bottom-color:var(--leaf);font-weight:700;background:var(--cream);}
+body.home-mode .tab.active{color:var(--teal-dark);border-bottom-color:var(--teal);}
+body.home-mode button.primary{background:var(--teal);border-color:var(--teal);}
+body.home-mode button.primary:hover{background:var(--teal-dark);}
+body.home-mode .landing-card-active{border-color:var(--teal)!important;}
 .view{display:none;}.view.active{display:block;}
 
 /* ---- Cards ---- */
@@ -754,6 +760,7 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <button class="tab active" data-home-tab="home-summary">Summary</button>
       <button class="tab" data-home-tab="home-add">Record</button>
       <button class="tab" data-home-tab="home-log">Log</button>
+      <button class="tab" data-home-tab="home-analysis">Analysis</button>
     </div>
 
     <!-- HOME SUMMARY -->
@@ -764,9 +771,9 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       </div>
 
       <!-- Total spent card -->
-      <div class="card" style="padding:1.5rem;border-left:5px solid var(--berry);">
+      <div class="card" style="padding:1.5rem;border-left:5px solid #0d6b61;">
         <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total spent</p>
-        <p id="home-stat-total" style="font-size:2.2rem;font-weight:800;margin:0 0 1rem;color:var(--berry);">₹ 0</p>
+        <p id="home-stat-total" style="font-size:2.2rem;font-weight:800;margin:0 0 1rem;color:#1a3a4a;">₹ 0</p>
         <div id="home-by-category"></div>
       </div>
 
@@ -777,11 +784,6 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
         <div style="position:relative;height:220px;"><canvas id="home-monthly-chart"></canvas></div>
       </div>
 
-      <!-- Top categories -->
-      <div class="card">
-        <h2 class="section-title">Top categories this year</h2>
-        <div id="home-top-categories"></div>
-      </div>
     </div>
 
     <!-- HOME ADD EXPENSE -->
@@ -816,10 +818,46 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <div class="card"><div class="row-table" id="home-log-list"></div></div>
     </div>
 
+    <!-- HOME ANALYSIS -->
+    <div class="view" id="view-home-analysis">
+
+      <!-- Average spending stat cards -->
+      <div id="home-analysis-stats" style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1rem;"></div>
+
+      <!-- Category trend chart -->
+      <div class="card">
+        <h2 class="section-title">Category trend</h2>
+        <div style="display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+          <select id="analysis-year-filter" style="padding:6px 10px;font-size:.85rem;border-radius:8px;border:1px solid var(--border);"></select>
+          <select id="analysis-cat-filter" style="padding:6px 10px;font-size:.85rem;border-radius:8px;border:1px solid var(--border);">
+            <option value="all">All categories</option>
+          </select>
+        </div>
+        <div style="position:relative;height:220px;"><canvas id="home-cat-trend-chart"></canvas></div>
+      </div>
+
+      <!-- Year comparison -->
+      <div class="card">
+        <h2 class="section-title">Year comparison</h2>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <span style="font-size:.85rem;color:var(--text-muted);">From</span>
+          <select id="home-compare-year-a" style="padding:7px 10px;font-size:.9rem;border-radius:8px;border:1px solid var(--border);font-weight:600;"></select>
+          <span style="font-size:.85rem;color:var(--text-muted);">to</span>
+          <select id="home-compare-year-b" style="padding:7px 10px;font-size:.9rem;border-radius:8px;border:1px solid var(--border);font-weight:600;"></select>
+        </div>
+        <div id="home-compare-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:8px;margin-bottom:1rem;"></div>
+        <div style="position:relative;height:220px;"><canvas id="home-compare-chart"></canvas></div>
+      </div>
+
+      <!-- Biggest expenses -->
+      <div class="card">
+        <h2 class="section-title">Biggest single expenses</h2>
+        <div id="home-biggest-list"></div>
+      </div>
+
+    </div>
+
   </main>
-
-  <!-- HOME ANALYSIS (shown in Summary tab) -->
-
 </div>
 
 <footer style="text-align:center;padding:1.5rem 1rem 2rem;font-size:.72rem;color:var(--text-muted);letter-spacing:.3px;">
@@ -862,6 +900,7 @@ const knownWorkers = new Set();
 
 // ===================== UTILS =====================
 const fmt = n => '₹ ' + new Intl.NumberFormat('en-IN',{minimumFractionDigits:2,maximumFractionDigits:2}).format(n||0);
+const fmtDate = d => { if(!d) return ''; const [y,m,dd]=d.split('-'); return `${dd}/${m}/${y}`; };
 const todayStr = () => new Date().toISOString().slice(0,10);
 function escHtml(s){ const d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
 const setSyncNote = t => {
@@ -984,6 +1023,10 @@ function enterSection(section){
     document.getElementById('hdr-section-icon').textContent='🌿';
     document.getElementById('btn-switch-icon-dd').textContent='🏠';
     document.getElementById('btn-switch-text-dd').textContent='Go to Home Records';
+    document.getElementById('main-header').style.background='linear-gradient(135deg,var(--soil) 0%,#2a1f17 100%)';
+    document.getElementById('main-header').style.borderBottomColor='var(--leaf)';
+    document.getElementById('hdr-avatar').style.background='var(--leaf)';
+    document.body.classList.remove('home-mode');
     switchTab('summary');
     if(!entries.length) loadFromSheet();
     else render();
@@ -993,6 +1036,10 @@ function enterSection(section){
     document.getElementById('hdr-section-icon').textContent='🏠';
     document.getElementById('btn-switch-icon-dd').textContent='🌿';
     document.getElementById('btn-switch-text-dd').textContent='Go to Farm Records';
+    document.getElementById('main-header').style.background='linear-gradient(135deg,#0d3d40 0%,#072a2d 100%)';
+    document.getElementById('main-header').style.borderBottomColor='#2a9d8f';
+    document.getElementById('hdr-avatar').style.background='#2a9d8f';
+    document.body.classList.add('home-mode');
     renderHomeCatSuggestions();
     renderHomeSection();
   }
@@ -1328,7 +1375,7 @@ document.getElementById('save-expense').addEventListener('click',async()=>{
   if(!scriptUrl){openSettings();return;}
   ensureCropExists(crop);
   showReview('Purchase Expense',[
-    {label:'Date',value:date},
+    {label:'Date',value:fmtDate(date)},
     {label:'Crop',value:crop},
     {label:'Category',value:category},
     {label:'Description',value:desc||'—'},
@@ -1353,7 +1400,7 @@ document.getElementById('save-workpay').addEventListener('click',async()=>{
   const workers=valid.map(el=>({name:el.dataset.name, amount:parseFloat(el.querySelector('input[type="number"]').value)}));
   const total=workers.reduce((s,w)=>s+w.amount,0);
   showReview('Labour Entry — Work Pay',[
-    {label:'Date',value:date},
+    {label:'Date',value:fmtDate(date)},
     {label:'Crop',value:crop},
     {label:'Task',value:task||'—'},
     {label:'Workers',value:workers.map(w=>`${w.name} (${fmt(w.amount)})`).join(', ')},
@@ -1385,7 +1432,7 @@ document.getElementById('save-advance').addEventListener('click',async()=>{
   if(!scriptUrl){openSettings();return;}
   const fullNote=note?`${reason} — ${note}`:reason;
   showReview('Cash Payment',[
-    {label:'Date',value:date},
+    {label:'Date',value:fmtDate(date)},
     {label:'Worker',value:name},
     {label:'Reason',value:reason},
     {label:'Note',value:note||'—'},
@@ -1409,7 +1456,7 @@ document.getElementById('save-income').addEventListener('click',async()=>{
   if(!scriptUrl){openSettings();return;}
   ensureCropExists(crop);
   showReview('Harvest Income',[
-    {label:'Date',value:date},
+    {label:'Date',value:fmtDate(date)},
     {label:'Crop',value:crop},
     {label:'Buyer',value:buyer||'—'},
     {label:'Quantity',value:quantity>0?`${quantity} ${unit}`:'—'},
@@ -1584,7 +1631,7 @@ function renderWorkers(){
   const payments=entries.filter(e=>e.type==='advance').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   document.getElementById('recent-payments').innerHTML=payments.length
     ?payments.map(e=>`<div class="entry-row">
-        <div><p class="entry-title">${escHtml(e.name)}</p><p class="entry-meta">${escHtml(e.note||'—')} · ${e.date}</p></div>
+        <div><p class="entry-title">${escHtml(e.name)}</p><p class="entry-meta">${escHtml(e.note||'—')} · ${fmtDate(e.date)}</p></div>
         <span class="entry-amount advance">${fmt(e.amount)}</span>
       </div>`).join('')
     :'<p class="empty-state">No cash payments yet</p>';
@@ -1593,7 +1640,7 @@ function renderWorkers(){
   const wages=entries.filter(e=>e.type==='wage').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   document.getElementById('recent-wages').innerHTML=wages.length
     ?wages.map(e=>`<div class="entry-row">
-        <div><p class="entry-title">${escHtml(e.name)}${e.task?' — '+escHtml(e.task):''}</p><p class="entry-meta">${escHtml(e.crop||'')} · ${e.date}</p></div>
+        <div><p class="entry-title">${escHtml(e.name)}${e.task?' — '+escHtml(e.task):''}</p><p class="entry-meta">${escHtml(e.crop||'')} · ${fmtDate(e.date)}</p></div>
         <span class="entry-amount wage">${fmt(e.amount)}</span>
       </div>`).join('')
     :'<p class="empty-state">No labour entries yet</p>';
@@ -1615,7 +1662,7 @@ function renderLog(){
     else if(e.type==='advance'){title=e.name+(e.note?' — '+e.note:'');label='Cash payment';}
     else{title=(e.buyer||'Sale')+(e.quantity?` — ${e.quantity} ${e.unit||''}`:'');label='Income';}
     const sub=[label]; if(e.crop) sub.push(e.crop);
-    const meta=[e.date,e.by?'by '+e.by:null].filter(Boolean).join(' · ');
+    const meta=[fmtDate(e.date),e.by?'by '+e.by:null].filter(Boolean).join(' · ');
     return `<div class="entry-row">
       <div><p class="entry-title">${escHtml(title)}</p><p class="entry-meta">${escHtml(sub.join(' · '))} · ${escHtml(meta)}</p></div>
       <div style="display:flex;align-items:center;gap:8px;">
@@ -2052,13 +2099,14 @@ document.querySelectorAll('[data-home-tab]').forEach(btn=>btn.addEventListener('
 function switchHomeTab(tab){
   currentHomeTab=tab;
   document.querySelectorAll('[data-home-tab]').forEach(b=>b.classList.toggle('active',b.dataset.homeTab===tab));
-  ['home-summary','home-add','home-log'].forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
+  ['home-summary','home-add','home-log','home-analysis'].forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
   renderHomeSection();
 }
 
 function renderHomeSection(){
   if(currentHomeTab==='home-summary') renderHomeSummary();
   if(currentHomeTab==='home-log') renderHomeLog();
+  if(currentHomeTab==='home-analysis') renderHomeAnalysis();
 }
 
 let homeMonthlyChart=null;
@@ -2099,7 +2147,7 @@ function renderHomeSummary(){
         <span>${escHtml(c)}</span>
         <div style="display:flex;align-items:center;gap:10px;">
           <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
-            <div style="width:${total>0?Math.round(a/total*100):0}%;height:100%;background:var(--berry);border-radius:3px;"></div>
+            <div style="width:${total>0?Math.round(a/total*100):0}%;height:100%;background:#2a9d8f;border-radius:3px;"></div>
           </div>
           <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
         </div>
@@ -2119,7 +2167,7 @@ function renderHomeSummary(){
     type:'bar',
     data:{labels:mn,datasets:[{
       label:'Expenses',data:mTotals.map(r2),
-      backgroundColor:mTotals.map((_,i)=>mf==='all'||mn[i]===mn[new Date(mf+'-01').getMonth()]?'rgba(140,58,43,.85)':'rgba(140,58,43,.3)'),
+      backgroundColor:mTotals.map((_,i)=>mf==='all'||mn[i]===mn[new Date(mf+'-01').getMonth()]?'rgba(13,107,97,.9)':'rgba(13,107,97,.3)'),
       borderRadius:4
     }]},
     options:{responsive:true,maintainAspectRatio:false,
@@ -2127,23 +2175,6 @@ function renderHomeSummary(){
       plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
     }
   });
-
-  // Top categories for the year
-  const yearCats={};
-  homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).forEach(e=>{yearCats[e.category]=(yearCats[e.category]||0)+e.amount;});
-  const yearTotal=Object.values(yearCats).reduce((s,v)=>s+v,0);
-  document.getElementById('home-top-categories').innerHTML=Object.keys(yearCats).length
-    ?Object.entries(yearCats).sort((a,b)=>b[1]-a[1]).slice(0,6).map(([c,a])=>`
-      <div class="cat-row">
-        <span>${escHtml(c)}</span>
-        <div style="display:flex;align-items:center;gap:10px;">
-          <div style="width:80px;height:6px;background:var(--cream-dark);border-radius:3px;overflow:hidden;">
-            <div style="width:${yearTotal>0?Math.round(a/yearTotal*100):0}%;height:100%;background:var(--berry);border-radius:3px;"></div>
-          </div>
-          <span style="font-weight:700;min-width:80px;text-align:right;">${fmt(a)}</span>
-        </div>
-      </div>`).join('')
-    :'<p class="empty-state">No expenses this year</p>';
 }
 
 function monthLabelHome(m){ const[y,mo]=m.split('-'); return new Date(+y,+mo-1).toLocaleString(undefined,{month:'long',year:'numeric'}); }
@@ -2155,7 +2186,7 @@ function renderHomeLog(){
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('home-log-list').innerHTML=list.length
     ?list.map(e=>`<div class="entry-row">
-        <div><p class="entry-title">${escHtml(e.desc||e.category)}</p><p class="entry-meta">${escHtml(e.category)} · ${e.date}${e.by?' · by '+escHtml(e.by):''}</p></div>
+        <div><p class="entry-title">${escHtml(e.desc||e.category)}</p><p class="entry-meta">${escHtml(e.category)} · ${fmtDate(e.date)}${e.by?' · by '+escHtml(e.by):''}</p></div>
         <div style="display:flex;align-items:center;gap:8px;">
           <span class="entry-amount expense">${fmt(e.amount)}</span>
           ${isAdmin?`<button class="del-btn" data-hid="${e.id}" aria-label="Delete">✕</button>`:''}
@@ -2187,7 +2218,7 @@ document.getElementById('save-home-expense').addEventListener('click',async()=>{
   if(!scriptUrl){openSettings();return;}
   ensureHomeCatExists(category);
   showReview('Household Expense',[
-    {label:'Date',value:date},
+    {label:'Date',value:fmtDate(date)},
     {label:'Category',value:category},
     {label:'Description',value:desc||'—'},
     {label:'Amount',value:fmt(amount),big:true},
@@ -2204,6 +2235,131 @@ document.getElementById('save-home-expense').addEventListener('click',async()=>{
     showSaved(res.ok);
   });
 });
+
+// ===================== HOME ANALYSIS =====================
+let homeCatTrendChart=null, homeCompareChart=null;
+
+function renderHomeAnalysis(){
+  const years=[...new Set(homeEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort().reverse();
+  const curYear=String(new Date().getFullYear());
+
+  // Populate year filter
+  const yrSel=document.getElementById('analysis-year-filter'), prevY=yrSel.value;
+  yrSel.innerHTML=years.map(y=>`<option value="${y}">${y}</option>`).join('')||`<option value="${curYear}">${curYear}</option>`;
+  if(years.includes(prevY)) yrSel.value=prevY;
+  else if(years.includes(curYear)) yrSel.value=curYear;
+  else if(years.length) yrSel.value=years[0];
+  const yr=yrSel.value;
+
+  // Populate category filter
+  const cats=[...new Set(homeEntries.map(e=>e.category).filter(Boolean))].sort();
+  const catSel=document.getElementById('analysis-cat-filter'), prevC=catSel.value;
+  catSel.innerHTML='<option value="all">All categories</option>'+cats.map(c=>`<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+  if([...catSel.options].some(o=>o.value===prevC)) catSel.value=prevC; else catSel.value='all';
+  const cat=catSel.value;
+
+  // ---- Stat cards ----
+  const yearEntries=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr);
+  const mn=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  const mTotals=new Array(12).fill(0);
+  yearEntries.forEach(e=>{ const m=parseInt(e.date.slice(5,7),10)-1; if(m>=0&&m<12) mTotals[m]+=e.amount; });
+  const activeMths=mTotals.filter(v=>v>0);
+  const avg=activeMths.length?activeMths.reduce((s,v)=>s+v,0)/activeMths.length:0;
+  const maxMth=mTotals.indexOf(Math.max(...mTotals));
+  const minMth=activeMths.length?mTotals.indexOf(Math.min(...activeMths.filter(v=>v>0))):0;
+  document.getElementById('home-analysis-stats').innerHTML=`
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Avg monthly</p>
+      <p style="font-size:1rem;font-weight:700;color:#1a3a4a;margin:0;">${fmt(avg)}</p>
+    </div>
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Highest month</p>
+      <p style="font-size:1rem;font-weight:700;color:#1a3a4a;margin:0 0 2px;">${activeMths.length?mn[maxMth]:'—'}</p>
+      <p style="font-size:.72rem;color:var(--text-muted);margin:0;">${activeMths.length?fmt(mTotals[maxMth]):''}</p>
+    </div>
+    <div style="background:var(--cream);border-radius:10px;padding:12px;text-align:center;">
+      <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Lowest month</p>
+      <p style="font-size:1rem;font-weight:700;color:var(--leaf-dark);margin:0 0 2px;">${activeMths.length?mn[minMth]:'—'}</p>
+      <p style="font-size:.72rem;color:var(--text-muted);margin:0;">${activeMths.length?fmt(mTotals[minMth]):''}</p>
+    </div>`;
+
+  // ---- Category trend chart ----
+  const catData=new Array(12).fill(0);
+  yearEntries.filter(e=>cat==='all'||e.category===cat).forEach(e=>{
+    const m=parseInt(e.date.slice(5,7),10)-1; if(m>=0&&m<12) catData[m]+=e.amount;
+  });
+  const maxCatVal=Math.max(...catData);
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  if(homeCatTrendChart) homeCatTrendChart.destroy();
+  homeCatTrendChart=new Chart(document.getElementById('home-cat-trend-chart'),{
+    type:'bar',
+    data:{labels:mn,datasets:[{
+      label:cat==='all'?'All categories':cat,
+      data:catData.map(v=>Math.round(v*100)/100),
+      backgroundColor:catData.map(v=>v===maxCatVal&&v>0?'rgba(13,107,97,.9)':'rgba(42,157,143,.35)'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{autoSkip:false,maxRotation:0,font:{size:10}}},y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  // ---- Year comparison ----
+  const allYears=[...new Set(homeEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort();
+  ['home-compare-year-a','home-compare-year-b'].forEach((id,i)=>{
+    const sel=document.getElementById(id), prev=sel.value;
+    sel.innerHTML=allYears.map(y=>`<option value="${y}">${y}</option>`).join('')||`<option value="${curYear}">${curYear}</option>`;
+    if(allYears.includes(prev)) sel.value=prev;
+    else sel.value=i===0?allYears[0]:allYears[allYears.length-1];
+  });
+  const yrFrom=document.getElementById('home-compare-year-a').value;
+  const yrTo=document.getElementById('home-compare-year-b').value;
+  const rangeYears=allYears.filter(y=>y>=yrFrom&&y<=yrTo);
+  const compareStats=rangeYears.map(y=>{
+    const total=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===y).reduce((s,e)=>s+e.amount,0);
+    return {yr:y,total};
+  });
+  document.getElementById('home-compare-stats').innerHTML=compareStats.map(s=>`
+    <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+      <p style="font-size:.72rem;font-weight:700;color:var(--soil);margin:0 0 4px;">${s.yr}</p>
+      <p style="font-size:.82rem;font-weight:700;color:#1a3a4a;margin:0;">${fmt(s.total)}</p>
+    </div>`).join('');
+  const maxCompare=Math.max(...compareStats.map(s=>s.total));
+  if(homeCompareChart) homeCompareChart.destroy();
+  homeCompareChart=new Chart(document.getElementById('home-compare-chart'),{
+    type:'bar',
+    data:{labels:rangeYears,datasets:[{
+      label:'Total spent',data:compareStats.map(s=>Math.round(s.total*100)/100),
+      backgroundColor:compareStats.map(s=>s.total===maxCompare&&s.total>0?'rgba(13,107,97,.9)':'rgba(42,157,143,.35)'),
+      borderRadius:4
+    }]},
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{x:{ticks:{font:{size:11}}},y:{beginAtZero:true,ticks:{callback:fmtTick}}},
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  // ---- Biggest single expenses ----
+  const biggest=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr)
+    .sort((a,b)=>b.amount-a.amount).slice(0,5);
+  document.getElementById('home-biggest-list').innerHTML=biggest.length
+    ?biggest.map((e,i)=>`
+      <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border);">
+        <span style="font-size:.72rem;font-weight:700;color:var(--text-muted);min-width:20px;">#${i+1}</span>
+        <div style="flex:1;">
+          <p style="margin:0;font-size:.88rem;font-weight:600;">${escHtml(e.desc||e.category)}</p>
+          <p style="margin:0;font-size:.75rem;color:var(--text-muted);">${escHtml(e.category)} · ${fmtDate(e.date)}</p>
+        </div>
+        <span style="font-weight:700;color:#1a3a4a;">${fmt(e.amount)}</span>
+      </div>`).join('')
+    :'<p class="empty-state">No expenses this year</p>';
+}
+
+document.getElementById('analysis-year-filter').addEventListener('change',renderHomeAnalysis);
+document.getElementById('analysis-cat-filter').addEventListener('change',renderHomeAnalysis);
+document.getElementById('home-compare-year-a').addEventListener('change',renderHomeAnalysis);
+document.getElementById('home-compare-year-b').addEventListener('change',renderHomeAnalysis);
 
 // ===================== INIT =====================
 const saved=getSession();

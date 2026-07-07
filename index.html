@@ -721,6 +721,13 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
         </select>
       </div>
       <div><label>Crop</label><select id="log-crop-filter"></select></div>
+      <div><label>Show</label>
+        <select id="log-limit">
+          <option value="10">10 entries</option>
+          <option value="30">30 entries</option>
+          <option value="all">All</option>
+        </select>
+      </div>
     </div>
     <div class="card"><div class="row-table" id="log-list"></div></div>
   </div>
@@ -800,6 +807,7 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <button class="tab" data-home-tab="home-add">Record</button>
       <button class="tab" data-home-tab="home-log">Log</button>
       <button class="tab" data-home-tab="home-analysis">Analysis</button>
+      <button class="tab" data-home-tab="home-aju">Aju</button>
     </div>
 
     <!-- HOME SUMMARY -->
@@ -853,6 +861,13 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
             <option value="all">All categories</option>
           </select>
         </div>
+        <div><label>Show</label>
+          <select id="home-log-limit">
+            <option value="10">10 entries</option>
+            <option value="30">30 entries</option>
+            <option value="all">All</option>
+          </select>
+        </div>
       </div>
       <div class="card"><div class="row-table" id="home-log-list"></div></div>
     </div>
@@ -892,6 +907,84 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <div class="card">
         <h2 class="section-title">Biggest single expenses</h2>
         <div id="home-biggest-list"></div>
+      </div>
+
+    </div>
+
+    <!-- AJU TAB -->
+    <div class="view" id="view-home-aju">
+
+      <!-- Summary card -->
+      <div class="card" style="padding:1.5rem;border-left:5px solid #1a3a4a;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
+          <div>
+            <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total contributed</p>
+            <p id="aju-stat-total" style="font-size:2rem;font-weight:800;margin:0;color:#1a3a4a;">₹ 0</p>
+          </div>
+          <select id="aju-year-filter" style="padding:6px 10px;font-size:.85rem;border-radius:8px;border:1px solid var(--border);"></select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
+          <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+            <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Loans paid</p>
+            <p id="aju-stat-loans" style="font-size:.95rem;font-weight:700;color:#1a3a4a;margin:0;">₹ 0</p>
+          </div>
+          <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+            <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Home transfers</p>
+            <p id="aju-stat-home" style="font-size:.95rem;font-weight:700;color:#1a3a4a;margin:0;">₹ 0</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Yearly chart — separate card -->
+      <div class="card">
+        <h2 class="section-title">Year by year</h2>
+        <div style="position:relative;height:220px;"><canvas id="aju-yearly-chart"></canvas></div>
+        <div style="display:flex;gap:16px;margin-top:10px;font-size:.75rem;color:var(--text-muted);">
+          <span><span style="display:inline-block;width:12px;height:10px;background:rgba(42,157,143,.7);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Home transfers</span>
+          <span><span style="display:inline-block;width:12px;height:10px;background:rgba(26,58,74,.85);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Loans</span>
+        </div>
+      </div>
+
+      <!-- Add entry (admin only) -->
+      <div class="card" id="aju-add-form">
+        <h2 class="section-title">Add entry</h2>
+        <div class="field"><label>Date</label><input type="date" id="aju-date"></div>
+        <div class="field"><label>Category</label>
+          <div class="toggle-group" style="margin-top:4px;">
+            <button class="active" id="aju-cat-loan" onclick="setAjuCat('Loan')">Loan</button>
+            <button id="aju-cat-home" onclick="setAjuCat('Home transfer')">Home transfer</button>
+          </div>
+          <input type="hidden" id="aju-category" value="Loan">
+        </div>
+        <div class="field"><label>Description</label>
+          <input type="text" id="aju-desc" placeholder="e.g. Achan loan, for car, to home">
+        </div>
+        <div class="field"><label>Amount</label>
+          <input type="number" id="aju-amount" placeholder="0.00" step="0.01">
+        </div>
+        <button class="primary" id="save-aju-entry" style="width:100%;">Save</button>
+      </div>
+
+      <!-- Log -->
+      <div class="card">
+        <h2 class="section-title">All entries</h2>
+        <div class="filters" style="margin-bottom:1rem;">
+          <div><label>Category</label>
+            <select id="aju-log-filter">
+              <option value="all">All</option>
+              <option value="Loan">Loan</option>
+              <option value="Home transfer">Home transfer</option>
+            </select>
+          </div>
+          <div><label>Show</label>
+            <select id="aju-log-limit">
+              <option value="10">10 entries</option>
+              <option value="30">30 entries</option>
+              <option value="all">All</option>
+            </select>
+          </div>
+        </div>
+        <div class="row-table" id="aju-log-list"></div>
       </div>
 
     </div>
@@ -1230,6 +1323,7 @@ function applySheetData(data){
   (data.income||[]).forEach(r=>entries.push({id:String(r.Id),type:'income',date:r.Date||'',crop:r.Crop||'',buyer:r.Buyer||'',quantity:parseFloat(r.Quantity)||0,unit:r.Unit||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
   (data.advances||[]).forEach(r=>entries.push({id:String(r.Id),type:'advance',date:r.Date||'',name:r.Worker||'',note:r.Note||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
   homeEntries=(data.household||[]).map(r=>({id:String(r.Id),date:r.Date||'',category:r.Category||'Other',desc:r.Description||'',amount:parseFloat(r.Amount)||0,by:r.RecordedBy||''}));
+  ajuEntries=(data.contributions||[]).map(r=>({id:String(r.Id),date:r.Date||'',category:r.Category||'',desc:r.Description||'',amount:parseFloat(r.Amount)||0}));
   if(data.users&&data.users.length) sheetUsers=data.users;
   crops=(data.crops&&data.crops.length)?data.crops:['Coffee'];
   renderCropSelects();
@@ -1563,6 +1657,7 @@ document.getElementById('summary-year-filter').addEventListener('change',renderS
 document.getElementById('crop-filter').addEventListener('change',renderSummary);
 document.getElementById('log-filter').addEventListener('change',renderLog);
 document.getElementById('log-crop-filter').addEventListener('change',renderLog);
+document.getElementById('log-limit').addEventListener('change',renderLog);
 document.getElementById('year-filter').addEventListener('change',renderAnalytics);
 document.getElementById('analytics-crop-filter').addEventListener('change',renderAnalytics);
 
@@ -1771,10 +1866,12 @@ document.getElementById('letter-popup').addEventListener('click',e=>{ if(e.targe
 // ===================== LOG =====================
 function renderLog(){
   const fv=document.getElementById('log-filter').value, cv=document.getElementById('log-crop-filter').value;
+  const limit=document.getElementById('log-limit').value;
   const getTs=id=>parseInt(id.replace(/^[a-z]+/,''))||0;
   let list=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||getTs(b.id)-getTs(a.id));
   if(fv!=='all') list=list.filter(e=>e.type===fv);
   if(cv!=='all') list=list.filter(e=>e.crop===cv);
+  if(limit!=='all') list=list.slice(0,parseInt(limit));
   if(!list.length){ document.getElementById('log-list').innerHTML='<p class="empty-state">No entries to show</p>'; return; }
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('log-list').innerHTML=list.map(e=>{
@@ -2221,7 +2318,7 @@ document.querySelectorAll('[data-home-tab]').forEach(btn=>btn.addEventListener('
 function switchHomeTab(tab){
   currentHomeTab=tab;
   document.querySelectorAll('[data-home-tab]').forEach(b=>b.classList.toggle('active',b.dataset.homeTab===tab));
-  ['home-summary','home-add','home-log','home-analysis'].forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
+  ['home-summary','home-add','home-log','home-analysis','home-aju'].forEach(t=>document.getElementById('view-'+t).classList.toggle('active',t===tab));
   renderHomeSection();
 }
 
@@ -2229,6 +2326,7 @@ function renderHomeSection(){
   if(currentHomeTab==='home-summary') renderHomeSummary();
   if(currentHomeTab==='home-log') renderHomeLog();
   if(currentHomeTab==='home-analysis') renderHomeAnalysis();
+  if(currentHomeTab==='home-aju') renderAjuTab();
 }
 
 let homeMonthlyChart=null;
@@ -2309,8 +2407,10 @@ function monthLabelHome(m){ const[y,mo]=m.split('-'); return new Date(+y,+mo-1).
 
 function renderHomeLog(){
   const fv=document.getElementById('home-log-filter').value;
+  const limit=document.getElementById('home-log-limit').value;
   let list=homeEntries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(fv!=='all') list=list.filter(e=>e.category===fv);
+  if(limit!=='all') list=list.slice(0,parseInt(limit));
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('home-log-list').innerHTML=list.length
     ?list.map(e=>`<div class="entry-row">
@@ -2335,6 +2435,7 @@ document.getElementById('home-exp-date').value=todayStr();
 document.getElementById('home-month-filter').addEventListener('change',renderHomeSummary);
 document.getElementById('home-year-filter').addEventListener('change',renderHomeSummary);
 document.getElementById('home-log-filter').addEventListener('change',renderHomeLog);
+document.getElementById('home-log-limit').addEventListener('change',renderHomeLog);
 
 document.getElementById('save-home-expense').addEventListener('click',async()=>{
   const date=document.getElementById('home-exp-date').value;
@@ -2488,6 +2589,133 @@ document.getElementById('analysis-year-filter').addEventListener('change',render
 document.getElementById('analysis-cat-filter').addEventListener('change',renderHomeAnalysis);
 document.getElementById('home-compare-year-a').addEventListener('change',renderHomeAnalysis);
 document.getElementById('home-compare-year-b').addEventListener('change',renderHomeAnalysis);
+
+// ===================== AJU TAB =====================
+let ajuEntries = [];
+let currentAjuCat = 'Loan';
+let ajuYearlyChart = null;
+
+function setAjuCat(cat){
+  currentAjuCat=cat;
+  document.getElementById('aju-category').value=cat;
+  document.getElementById('aju-cat-loan').classList.toggle('active',cat==='Loan');
+  document.getElementById('aju-cat-home').classList.toggle('active',cat==='Home transfer');
+}
+window.setAjuCat=setAjuCat;
+
+function renderAjuTab(){
+  const isAdmin=currentUser&&currentUser.role==='admin';
+  // Show add form only for admin
+  document.getElementById('aju-add-form').style.display=isAdmin?'block':'none';
+
+  // Populate year filter
+  const years=[...new Set(ajuEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort().reverse();
+  const curYear=String(new Date().getFullYear());
+  const yrSel=document.getElementById('aju-year-filter'), prevY=yrSel.value;
+  yrSel.innerHTML='<option value="all">All years</option>'+years.map(y=>`<option value="${y}">${y}</option>`).join('');
+  if(years.includes(prevY)) yrSel.value=prevY;
+  else yrSel.value='all';
+  const yr=yrSel.value;
+
+  // Filter by year
+  const filtered=ajuEntries.filter(e=>yr==='all'||e.date.slice(0,4)===yr);
+  const total=filtered.reduce((s,e)=>s+e.amount,0);
+  const loans=filtered.filter(e=>e.category==='Loan').reduce((s,e)=>s+e.amount,0);
+  const transfers=filtered.filter(e=>e.category==='Home transfer').reduce((s,e)=>s+e.amount,0);
+
+  document.getElementById('aju-stat-total').textContent=fmt(total);
+  document.getElementById('aju-stat-loans').textContent=fmt(loans);
+  document.getElementById('aju-stat-home').textContent=fmt(transfers);
+
+  // ---- Yearly chart (always all-time) ----
+  const allYears=[...new Set(ajuEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort();
+  const yearTotals=allYears.map(y=>({
+    yr:y,
+    loans:ajuEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Loan').reduce((s,e)=>s+e.amount,0),
+    home:ajuEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Home transfer').reduce((s,e)=>s+e.amount,0)
+  }));
+  const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
+  if(ajuYearlyChart) ajuYearlyChart.destroy();
+  ajuYearlyChart=new Chart(document.getElementById('aju-yearly-chart'),{
+    type:'bar',
+    data:{
+      labels:allYears,
+      datasets:[
+        {label:'Home transfers',data:yearTotals.map(y=>Math.round(y.home)),backgroundColor:'rgba(42,157,143,.7)',borderRadius:0,stack:'total'},
+        {label:'Loans',data:yearTotals.map(y=>Math.round(y.loans)),backgroundColor:'rgba(26,58,74,.85)',borderRadius:4,stack:'total'},
+      ]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{ticks:{font:{size:11}}},
+        y:{beginAtZero:true,stacked:true,ticks:{callback:fmtTick}}
+      },
+      plugins:{legend:{display:false},
+        tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${fmt(ctx.parsed.y)}`}}}
+    }
+  });
+
+  // Log
+  const catFilter=document.getElementById('aju-log-filter').value;
+  const limit=document.getElementById('aju-log-limit').value;
+  let list=ajuEntries.slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(catFilter!=='all') list=list.filter(e=>e.category===catFilter);
+  if(limit!=='all') list=list.slice(0,parseInt(limit));
+  const isAdminDel=isAdmin;
+  document.getElementById('aju-log-list').innerHTML=list.length
+    ?list.map(e=>`<div class="entry-row">
+        <div>
+          <p class="entry-title">${escHtml(e.desc||'—')}</p>
+          <p class="entry-meta">
+            <span style="background:${e.category==='Loan'?'#1a3a4a':'#2a9d8f'};color:#fff;padding:1px 7px;border-radius:10px;font-size:.7rem;">${escHtml(e.category)}</span>
+            · ${fmtDate(e.date)}
+          </p>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-weight:700;color:#1a3a4a;">${fmt(e.amount)}</span>
+          ${isAdminDel?`<button class="del-btn" data-ajuid="${e.id}" aria-label="Delete">✕</button>`:''}
+        </div>
+      </div>`).join('')
+    :'<p class="empty-state">No entries yet</p>';
+
+  if(isAdminDel) document.querySelectorAll('.del-btn[data-ajuid]').forEach(btn=>btn.addEventListener('click',()=>{
+    if(!confirm('Delete this entry? This cannot be undone.')) return;
+    ajuEntries=ajuEntries.filter(e=>e.id!==btn.getAttribute('data-ajuid'));
+    callScript('deleteEntry',{id:btn.getAttribute('data-ajuid'),entryType:'contribution'});
+    renderAjuTab();
+  }));
+}
+
+document.getElementById('aju-year-filter').addEventListener('change',renderAjuTab);
+document.getElementById('aju-log-filter').addEventListener('change',renderAjuTab);
+document.getElementById('aju-log-limit').addEventListener('change',renderAjuTab);
+
+// Set today's date
+document.getElementById('aju-date').value=todayStr();
+
+document.getElementById('save-aju-entry').addEventListener('click',async()=>{
+  const date=document.getElementById('aju-date').value;
+  const category=document.getElementById('aju-category').value;
+  const desc=document.getElementById('aju-desc').value.trim();
+  const amount=parseFloat(document.getElementById('aju-amount').value);
+  if(!date||!amount||amount<=0) return;
+  if(!scriptUrl){openSettings();return;}
+  showReview('Aju\'s Contribution',[
+    {label:'Date',value:fmtDate(date)},
+    {label:'Category',value:category},
+    {label:'Description',value:desc||'—'},
+    {label:'Amount',value:fmt(amount),big:true},
+  ],async()=>{
+    const entry={id:'aj'+Date.now()+Math.floor(Math.random()*9999),date,category,desc,amount};
+    ajuEntries.push(entry);
+    document.getElementById('aju-desc').value='';
+    document.getElementById('aju-amount').value='';
+    renderAjuTab();
+    showSaving();
+    const res=await callScript('addContribution',{entry});
+    showSaved(res.ok);
+  });
+});
 
 // ===================== INIT =====================
 const saved=getSession();

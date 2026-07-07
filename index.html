@@ -532,19 +532,56 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 
   <!-- ===== WORKERS ===== -->
   <div class="view" id="view-workers">
+
+    <!-- Worker Balance — non-zero only -->
     <div class="card">
       <h2 class="section-title">Worker balance</h2>
-      <p class="instructions" style="margin-bottom:12px;">All-time totals — not affected by any filter. Balance = wages earned minus cash paid.</p>
-      <div style="overflow-x:auto;"><div id="by-worker" style="min-width:340px;"></div></div>
+      <p class="instructions" style="margin-bottom:12px;">All-time. Only workers with outstanding balance shown.</p>
+      <div id="by-worker"></div>
     </div>
+
+    <!-- All Workers A-Z -->
+    <div class="card">
+      <h2 class="section-title">All workers</h2>
+      <p class="instructions" style="margin-bottom:12px;">Browse all workers alphabetically.</p>
+      <!-- A-Z letter bar -->
+      <div id="worker-alpha-bar" style="display:flex;flex-wrap:wrap;gap:4px;margin-bottom:12px;"></div>
+    </div>
+
+    <!-- Recent cash payments -->
     <div class="card">
       <h2 class="section-title">Recent cash payments</h2>
       <div class="row-table" id="recent-payments"></div>
     </div>
+
+    <!-- Recent labour entries -->
     <div class="card">
       <h2 class="section-title">Recent labour entries</h2>
       <div class="row-table" id="recent-wages"></div>
     </div>
+
+    <!-- Worker detail popup -->
+    <div id="worker-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+      <div style="background:var(--white);border-radius:16px;width:100%;max-width:420px;max-height:80vh;overflow-y:auto;">
+        <div style="padding:1.25rem 1.25rem 0;display:flex;justify-content:space-between;align-items:center;">
+          <h2 id="worker-popup-name" class="section-title" style="margin:0;"></h2>
+          <button id="close-worker-popup" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        </div>
+        <div id="worker-popup-content" style="padding:1.25rem;"></div>
+      </div>
+    </div>
+
+    <!-- Letter workers popup -->
+    <div id="letter-popup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:300;align-items:center;justify-content:center;padding:1rem;">
+      <div style="background:var(--white);border-radius:16px;width:100%;max-width:320px;max-height:60vh;overflow-y:auto;">
+        <div style="padding:1.25rem 1.25rem 0;display:flex;justify-content:space-between;align-items:center;">
+          <h2 id="letter-popup-title" class="section-title" style="margin:0;"></h2>
+          <button id="close-letter-popup" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:var(--text-muted);">✕</button>
+        </div>
+        <div id="letter-popup-list" style="padding:1.25rem;"></div>
+      </div>
+    </div>
+
   </div>
 
   <!-- ===== ADD ENTRY ===== -->
@@ -774,7 +811,7 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 
       <!-- Total spent card -->
       <div class="card" style="padding:1.5rem;border-left:5px solid #0d6b61;">
-        <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total spent</p>
+        <p id="home-stat-label" style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total spent</p>
         <p id="home-stat-total" style="font-size:2.2rem;font-weight:800;margin:0 0 1rem;color:#1a3a4a;">₹ 0</p>
         <div id="home-by-category"></div>
       </div>
@@ -1632,26 +1669,33 @@ function renderSummary(){
 }
 
 function renderWorkers(){
-  // Worker balance — all-time
-  const wkWages={},wkAdv={};
+  const wkWages={}, wkAdv={};
   entries.filter(e=>e.type==='wage'&&e.name).forEach(e=>{wkWages[e.name]=(wkWages[e.name]||0)+e.amount;});
   entries.filter(e=>e.type==='advance'&&e.name).forEach(e=>{wkAdv[e.name]=(wkAdv[e.name]||0)+e.amount;});
   const allW=[...new Set([...Object.keys(wkWages),...Object.keys(wkAdv)])].sort();
-  document.getElementById('by-worker').innerHTML=allW.length
-    ?`<div style="display:grid;grid-template-columns:1fr 110px 110px 110px;gap:4px 8px;font-size:.75rem;color:var(--text-muted);padding-bottom:8px;border-bottom:2px solid var(--border);margin-bottom:4px;">
-        <span>Worker</span><span style="text-align:right;">Wages earned</span><span style="text-align:right;">Cash paid</span><span style="text-align:right;">Balance</span>
-      </div>`+allW.map(n=>{
+
+  // ---- Worker balance — non-zero only ----
+  const nonZero=allW.filter(n=>{const w=wkWages[n]||0,a=wkAdv[n]||0;return Math.abs(w-a)>0.001;});
+  document.getElementById('by-worker').innerHTML=nonZero.length
+    ?nonZero.map(n=>{
         const w=wkWages[n]||0,a=wkAdv[n]||0,bal=w-a;
-        return `<div style="display:grid;grid-template-columns:1fr 110px 110px 110px;gap:4px 8px;padding:9px 0;border-bottom:1px solid var(--border);font-size:.85rem;align-items:center;">
+        return `<div class="entry-row" style="cursor:pointer;" onclick="showWorkerDetail('${escHtml(n)}')">
           <span style="font-weight:600;">${escHtml(n)}</span>
-          <span style="text-align:right;">${fmt(w)}</span>
-          <span style="text-align:right;color:var(--berry);">${fmt(a)}</span>
-          <span style="text-align:right;font-weight:700;color:${bal<0?'var(--berry)':'var(--leaf-dark)'};">${fmt(bal)}</span>
+          <span style="font-weight:700;color:${bal>0?'var(--berry)':'var(--leaf-dark)'};">${fmt(bal)}</span>
         </div>`;
       }).join('')
-    :'<p class="empty-state">No worker records yet</p>';
+    :'<p class="empty-state">No outstanding balances</p>';
 
-  // Recent cash payments (last 10)
+  // ---- A-Z letter bar ----
+  const letters='ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
+  const workersByLetter={};
+  allW.forEach(n=>{ const l=n[0].toUpperCase(); if(!workersByLetter[l]) workersByLetter[l]=[]; workersByLetter[l].push(n); });
+  document.getElementById('worker-alpha-bar').innerHTML=letters.map(l=>{
+    const has=workersByLetter[l]&&workersByLetter[l].length>0;
+    return `<button onclick="showLetterPopup('${l}')" style="width:32px;height:32px;border-radius:8px;border:1px solid ${has?'var(--leaf)':'var(--border)'};background:${has?'var(--leaf)':'transparent'};color:${has?'#fff':'var(--text-muted)'};font-size:.8rem;font-weight:700;cursor:${has?'pointer':'default'};">${l}</button>`;
+  }).join('');
+
+  // ---- Recent cash payments ----
   const payments=entries.filter(e=>e.type==='advance').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   document.getElementById('recent-payments').innerHTML=payments.length
     ?payments.map(e=>`<div class="entry-row">
@@ -1660,7 +1704,7 @@ function renderWorkers(){
       </div>`).join('')
     :'<p class="empty-state">No cash payments yet</p>';
 
-  // Recent labour entries (last 10)
+  // ---- Recent labour entries ----
   const wages=entries.filter(e=>e.type==='wage').sort((a,b)=>b.date.localeCompare(a.date)).slice(0,10);
   document.getElementById('recent-wages').innerHTML=wages.length
     ?wages.map(e=>`<div class="entry-row">
@@ -1669,6 +1713,60 @@ function renderWorkers(){
       </div>`).join('')
     :'<p class="empty-state">No labour entries yet</p>';
 }
+
+// ---- Worker detail popup ----
+window.showWorkerDetail=function(name){
+  const wkWages={},wkAdv={};
+  entries.filter(e=>e.type==='wage'&&e.name).forEach(e=>{wkWages[e.name]=(wkWages[e.name]||0)+e.amount;});
+  entries.filter(e=>e.type==='advance'&&e.name).forEach(e=>{wkAdv[e.name]=(wkAdv[e.name]||0)+e.amount;});
+  const w=wkWages[name]||0, a=wkAdv[name]||0, bal=w-a;
+  const recentW=entries.filter(e=>e.type==='wage'&&e.name===name).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const recentP=entries.filter(e=>e.type==='advance'&&e.name===name).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  document.getElementById('worker-popup-name').textContent=name;
+  document.getElementById('worker-popup-content').innerHTML=`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:1.25rem;">
+      <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+        <p style="font-size:.62rem;text-transform:uppercase;color:var(--text-muted);margin:0 0 4px;">Earned</p>
+        <p style="font-size:.9rem;font-weight:700;color:var(--berry);margin:0;">${fmt(w)}</p>
+      </div>
+      <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+        <p style="font-size:.62rem;text-transform:uppercase;color:var(--text-muted);margin:0 0 4px;">Paid</p>
+        <p style="font-size:.9rem;font-weight:700;color:var(--leaf-dark);margin:0;">${fmt(a)}</p>
+      </div>
+      <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
+        <p style="font-size:.62rem;text-transform:uppercase;color:var(--text-muted);margin:0 0 4px;">Balance</p>
+        <p style="font-size:.9rem;font-weight:700;color:${bal>0?'var(--berry)':'var(--leaf-dark)'};margin:0;">${fmt(bal)}</p>
+      </div>
+    </div>
+    ${recentW.length?`<p style="font-size:.78rem;font-weight:700;color:var(--text-muted);margin:0 0 8px;text-transform:uppercase;letter-spacing:.5px;">Recent labour</p>`+''+recentW.map(e=>`
+      <div class="entry-row"><div><p class="entry-title">${escHtml(e.task||'Labour')}</p><p class="entry-meta">${fmtDate(e.date)}</p></div><span class="entry-amount wage">${fmt(e.amount)}</span></div>`).join(''):''}
+    ${recentP.length?`<p style="font-size:.78rem;font-weight:700;color:var(--text-muted);margin:1rem 0 8px;text-transform:uppercase;letter-spacing:.5px;">Recent payments</p>`+''+recentP.map(e=>`
+      <div class="entry-row"><div><p class="entry-title">${escHtml(e.note||'Payment')}</p><p class="entry-meta">${fmtDate(e.date)}</p></div><span class="entry-amount advance">${fmt(e.amount)}</span></div>`).join(''):''}`;
+  document.getElementById('worker-popup').style.display='flex';
+};
+document.getElementById('close-worker-popup').addEventListener('click',()=>document.getElementById('worker-popup').style.display='none');
+document.getElementById('worker-popup').addEventListener('click',e=>{ if(e.target===document.getElementById('worker-popup')) document.getElementById('worker-popup').style.display='none'; });
+
+// ---- Letter popup ----
+window.showLetterPopup=function(letter){
+  const wkWages={},wkAdv={};
+  entries.filter(e=>e.type==='wage'&&e.name).forEach(e=>{wkWages[e.name]=(wkWages[e.name]||0)+e.amount;});
+  entries.filter(e=>e.type==='advance'&&e.name).forEach(e=>{wkAdv[e.name]=(wkAdv[e.name]||0)+e.amount;});
+  const allW=[...new Set([...Object.keys(wkWages),...Object.keys(wkAdv)])].sort();
+  const workers=allW.filter(n=>n[0].toUpperCase()===letter);
+  if(!workers.length) return;
+  document.getElementById('letter-popup-title').textContent=letter;
+  document.getElementById('letter-popup-list').innerHTML=workers.map(n=>{
+    const w=wkWages[n]||0,a=wkAdv[n]||0,bal=w-a;
+    return `<div class="entry-row" style="cursor:pointer;" onclick="document.getElementById('letter-popup').style.display='none';showWorkerDetail('${escHtml(n)}')">
+      <span style="font-weight:600;">${escHtml(n)}</span>
+      <span style="font-size:.82rem;color:${bal>0?'var(--berry)':'var(--leaf-dark)'};">${fmt(bal)}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('letter-popup').style.display='flex';
+};
+document.getElementById('close-letter-popup').addEventListener('click',()=>document.getElementById('letter-popup').style.display='none');
+document.getElementById('letter-popup').addEventListener('click',e=>{ if(e.target===document.getElementById('letter-popup')) document.getElementById('letter-popup').style.display='none'; });
 
 // ===================== LOG =====================
 function renderLog(){
@@ -2148,18 +2246,24 @@ function renderHomeSummary(){
   else if(years.length) yrSel.value=years[0];
   const yr=yrSel.value;
 
-  // Populate month filter
-  const months=[...new Set(homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).map(e=>e.date.slice(0,7)))].sort().reverse();
+  // Populate month filter — month names only, no year
+  const allMonthNums=[...new Set(homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr).map(e=>e.date.slice(5,7)))].sort();
   const mSel=document.getElementById('home-month-filter'), prevM=mSel.value;
-  mSel.innerHTML='<option value="all">All months</option>'+months.map(m=>`<option value="${m}">${monthLabelHome(m)}</option>`).join('');
-  if(months.includes(prevM)) mSel.value=prevM;
-  else if(months.includes(curM)) mSel.value=curM;
+  const monthNames=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  mSel.innerHTML='<option value="all">All months</option>'+allMonthNums.map(mo=>`<option value="${mo}">${monthNames[parseInt(mo,10)-1]}</option>`).join('');
+  const curMo=String(new Date().getMonth()+1).padStart(2,'0');
+  if([...mSel.options].some(o=>o.value===prevM)) mSel.value=prevM;
+  else if(allMonthNums.includes(curMo)) mSel.value=curMo;
   else mSel.value='all';
   const mf=mSel.value;
 
-  // Filter for selected month
-  const filtered=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr&&(mf==='all'||e.date.slice(0,7)===mf));
+  // Filter entries for selected year + month
+  const filtered=homeEntries.filter(e=>e.date&&e.date.slice(0,4)===yr&&(mf==='all'||e.date.slice(5,7)===mf));
   const total=filtered.reduce((s,e)=>s+e.amount,0);
+
+  // Dynamic label
+  const labelText=mf==='all'?`Total spent · ${yr}`:`Total spent · ${monthNames[parseInt(mf,10)-1]} ${yr}`;
+  document.getElementById('home-stat-label').textContent=labelText;
   document.getElementById('home-stat-total').textContent=fmt(total);
 
   // By category (filtered)

@@ -918,12 +918,15 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <div class="card" style="padding:1.5rem;border-left:5px solid #1a3a4a;">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;">
           <div>
-            <p style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total contributed</p>
+            <p id="aju-stat-label" style="font-size:.68rem;text-transform:uppercase;letter-spacing:.8px;color:var(--text-muted);margin:0 0 4px;">Total contributed</p>
             <p id="aju-stat-total" style="font-size:2rem;font-weight:800;margin:0;color:#1a3a4a;">₹ 0</p>
           </div>
-          <select id="aju-year-filter" style="padding:6px 10px;font-size:.85rem;border-radius:8px;border:1px solid var(--border);"></select>
+          <select id="aju-year-filter" style="padding:4px 6px;font-size:.78rem;border-radius:8px;border:1px solid var(--border);max-width:90px;"></select>
         </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:1rem;">
+        <div style="margin-bottom:1rem;">
+          <input type="text" id="aju-stat-search" placeholder="Filter by keyword e.g. Achan-loan, housing..." autocomplete="off" style="width:100%;box-sizing:border-box;">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
           <div style="background:var(--cream);border-radius:10px;padding:10px;text-align:center;">
             <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 4px;">Loans paid</p>
             <p id="aju-stat-loans" style="font-size:.95rem;font-weight:700;color:#1a3a4a;margin:0;">₹ 0</p>
@@ -984,6 +987,10 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
             </select>
           </div>
         </div>
+        <div class="field" style="margin-bottom:10px;">
+          <input type="text" id="aju-search" placeholder="Search description e.g. Achan-loan, housing loan..." autocomplete="off">
+        </div>
+        <div id="aju-search-summary" style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px;display:none;"></div>
         <div class="row-table" id="aju-log-list"></div>
       </div>
 
@@ -2617,22 +2624,27 @@ function renderAjuTab(){
   else yrSel.value='all';
   const yr=yrSel.value;
 
-  // Filter by year
+  // Filter by year + stat search (affects stats and chart only)
   const filtered=ajuEntries.filter(e=>yr==='all'||e.date.slice(0,4)===yr);
-  const total=filtered.reduce((s,e)=>s+e.amount,0);
-  const loans=filtered.filter(e=>e.category==='Loan').reduce((s,e)=>s+e.amount,0);
-  const transfers=filtered.filter(e=>e.category==='Home transfer').reduce((s,e)=>s+e.amount,0);
+  const statSearch=document.getElementById('aju-stat-search').value.trim().toLowerCase();
+  const statFiltered=statSearch?filtered.filter(e=>(e.desc||'').toLowerCase().includes(statSearch)):filtered;
+  const total=statFiltered.reduce((s,e)=>s+e.amount,0);
+  const loans=statFiltered.filter(e=>e.category==='Loan').reduce((s,e)=>s+e.amount,0);
+  const transfers=statFiltered.filter(e=>e.category==='Home transfer').reduce((s,e)=>s+e.amount,0);
 
   document.getElementById('aju-stat-total').textContent=fmt(total);
   document.getElementById('aju-stat-loans').textContent=fmt(loans);
   document.getElementById('aju-stat-home').textContent=fmt(transfers);
+  // Update label if searching
+  document.getElementById('aju-stat-label').textContent=statSearch?`Total · "${document.getElementById('aju-stat-search').value.trim()}"` :'Total contributed';
 
   // ---- Yearly chart (always all-time) ----
   const allYears=[...new Set(ajuEntries.filter(e=>e.date).map(e=>e.date.slice(0,4)))].sort();
+  const chartEntries=statSearch?ajuEntries.filter(e=>(e.desc||'').toLowerCase().includes(statSearch)):ajuEntries;
   const yearTotals=allYears.map(y=>({
     yr:y,
-    loans:ajuEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Loan').reduce((s,e)=>s+e.amount,0),
-    home:ajuEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Home transfer').reduce((s,e)=>s+e.amount,0)
+    loans:chartEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Loan').reduce((s,e)=>s+e.amount,0),
+    home:chartEntries.filter(e=>e.date.slice(0,4)===y&&e.category==='Home transfer').reduce((s,e)=>s+e.amount,0)
   }));
   const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
   if(ajuYearlyChart) ajuYearlyChart.destroy();
@@ -2658,8 +2670,21 @@ function renderAjuTab(){
   // Log
   const catFilter=document.getElementById('aju-log-filter').value;
   const limit=document.getElementById('aju-log-limit').value;
+  const logSearch=document.getElementById('aju-search').value.trim().toLowerCase();
   let list=ajuEntries.slice().sort((a,b)=>b.date.localeCompare(a.date));
   if(catFilter!=='all') list=list.filter(e=>e.category===catFilter);
+  if(logSearch) list=list.filter(e=>(e.desc||'').toLowerCase().includes(logSearch));
+
+  // Search summary
+  const summaryEl=document.getElementById('aju-search-summary');
+  if(logSearch){
+    const searchTotal=list.reduce((s,e)=>s+e.amount,0);
+    summaryEl.textContent=`${list.length} entries found · Total: ${fmt(searchTotal)}`;
+    summaryEl.style.display='block';
+  } else {
+    summaryEl.style.display='none';
+  }
+
   if(limit!=='all') list=list.slice(0,parseInt(limit));
   const isAdminDel=isAdmin;
   document.getElementById('aju-log-list').innerHTML=list.length
@@ -2689,6 +2714,8 @@ function renderAjuTab(){
 document.getElementById('aju-year-filter').addEventListener('change',renderAjuTab);
 document.getElementById('aju-log-filter').addEventListener('change',renderAjuTab);
 document.getElementById('aju-log-limit').addEventListener('change',renderAjuTab);
+document.getElementById('aju-search').addEventListener('input',renderAjuTab);
+document.getElementById('aju-stat-search').addEventListener('input',renderAjuTab);
 
 // Set today's date
 document.getElementById('aju-date').value=todayStr();

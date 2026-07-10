@@ -1040,24 +1040,6 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <!-- Shimmer for today -->
       <div id="conn-shimmer" style="background:var(--cream-dark);border-radius:10px;height:76px;animation:shimmer 1.5s ease-in-out infinite;"></div>
     </div>
-    <!-- Field 2: tomorrow forecast — same as password field -->
-    <div class="field" id="conn-tomorrow-wrap">
-      <div id="conn-tomorrow-weather" style="display:none;background:var(--cream);border-radius:10px;padding:10px 12px;text-align:left;">
-        <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;">Tomorrow</p>
-        <div style="display:flex;justify-content:space-between;align-items:center;">
-          <div>
-            <p id="conn-tomorrow-temp" style="font-size:1rem;font-weight:700;color:var(--soil);margin:0 0 1px;"></p>
-            <p id="conn-tomorrow-desc" style="font-size:.76rem;color:var(--text-muted);margin:0;"></p>
-          </div>
-          <div style="text-align:right;">
-            <p id="conn-tomorrow-icon" style="font-size:1.4rem;margin:0 0 1px;"></p>
-            <p id="conn-tomorrow-rain" style="font-size:.72rem;color:var(--text-muted);margin:0;"></p>
-          </div>
-        </div>
-      </div>
-      <!-- Shimmer for tomorrow -->
-      <div id="conn-shimmer2" style="background:var(--cream-dark);border-radius:10px;height:62px;animation:shimmer 1.5s ease-in-out infinite;"></div>
-    </div>
     <!-- Progress bar — same size/position as Sign in button -->
     <div style="width:100%;height:44px;border-radius:10px;background:var(--cream-dark);margin-top:8px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">
       <p id="conn-msg" style="font-size:.82rem;color:var(--text-muted);margin:0;z-index:1;position:relative;"></p>
@@ -1277,8 +1259,6 @@ function showConnecting(){
   // Reset weather widget
   document.getElementById('conn-weather').style.display='none';
   document.getElementById('conn-shimmer').style.display='block';
-  document.getElementById('conn-tomorrow-weather').style.display='none';
-  document.getElementById('conn-shimmer2').style.display='block';
   fetchWeather();
 }
 function hideConnecting(){ document.getElementById('connecting-overlay').style.display='none'; }
@@ -1287,7 +1267,6 @@ function showConnectFailed(reason){
   document.getElementById('conn-msg').textContent='';
   const sk=document.getElementById('conn-skeleton');
   if(sk) sk.style.display='none';
-  const sk2=document.getElementById('conn-tomorrow-wrap');
   if(sk2) sk2.style.display='none';
   document.getElementById('conn-error-detail').textContent=reason||'Could not reach the Google Sheet.';
   document.getElementById('conn-error-box').style.display='block';
@@ -1331,15 +1310,9 @@ async function fetchWeather(){
     const tmrMax = Math.round(d.temperature_2m_max[1]);
     const tmrMin = Math.round(d.temperature_2m_min[1]);
     const tmrRain = d.precipitation_sum[1];
-    document.getElementById('conn-tomorrow-temp').textContent = `${tmrMax}° / ${tmrMin}°C`;
-    document.getElementById('conn-tomorrow-desc').textContent = tmr.desc;
-    document.getElementById('conn-tomorrow-icon').textContent = tmr.icon;
-    document.getElementById('conn-tomorrow-rain').textContent = tmrRain>0?`🌧️ ${tmrRain}mm expected`:'No rain expected';
 
     document.getElementById('conn-shimmer').style.display='none';
-    document.getElementById('conn-shimmer2').style.display='none';
     document.getElementById('conn-weather').style.display='block';
-    document.getElementById('conn-tomorrow-weather').style.display='block';
   } catch(e){
     // Fail silently
   }

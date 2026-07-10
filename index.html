@@ -1012,66 +1012,59 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
   <!-- Top colour band -->
   <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),#2a9d8f,var(--leaf-dark));"></div>
 
-  <div class="login-box" style="text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;">
-    <!-- Emblem + title + tagline + divider — same as login -->
+  <div class="login-box" style="position:relative;z-index:1;">
     <div class="login-emblem" id="conn-leaf" style="animation:pulse 1.5s ease-in-out infinite;margin-left:auto;margin-right:auto;">🌿</div>
-    <h1>VAYAL</h1>
+    <h1 style="text-align:center;">VAYAL</h1>
     <p class="login-tagline">Our Farm. Our Home. Our Records.</p>
     <hr class="login-divider">
-
-    <!-- Greeting -->
-    <p id="conn-greeting" style="font-size:1rem;font-weight:600;color:var(--soil);margin:0 0 4px;"></p>
-    <p id="conn-msg" style="font-size:.82rem;color:var(--text-muted);margin:0 0 1.25rem;"></p>
-
-    <!-- Skeleton placeholders — mimics login form fields -->
-    <div id="conn-skeleton" style="margin-bottom:1.25rem;">
-      <!-- Weather widget -->
-      <div id="conn-weather" style="background:var(--cream);border-radius:12px;padding:12px 14px;margin-bottom:12px;text-align:left;display:none;">
-        <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 8px;">🌿 Thenery Farm · Meenangadi</p>
-        <!-- Today -->
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-          <div>
-            <p id="conn-weather-temp" style="font-size:1.6rem;font-weight:800;color:var(--soil);margin:0 0 2px;">--°C</p>
-            <p id="conn-weather-desc" style="font-size:.78rem;color:var(--text-muted);margin:0;"></p>
-            <p id="conn-weather-wind" style="font-size:.75rem;color:var(--text-muted);margin:2px 0 0;"></p>
-          </div>
-          <div style="text-align:right;">
-            <p id="conn-weather-icon" style="font-size:2rem;margin:0 0 2px;"></p>
-            <p id="conn-weather-humidity" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
-            <p id="conn-weather-rain" style="font-size:.75rem;color:var(--text-muted);margin:2px 0 0;"></p>
+    <p class="sub" id="conn-greeting" style="text-align:center;"></p>
+    <!-- Field 1: weather today — same as name field -->
+    <div class="field" id="conn-skeleton">
+      <div id="conn-weather" style="display:none;">
+        <div style="background:var(--cream);border-radius:10px;padding:10px 12px;text-align:left;">
+          <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;">🌿 Thenery Farm · Meenangadi</p>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <p id="conn-weather-temp" style="font-size:1.4rem;font-weight:800;color:var(--soil);margin:0 0 1px;">--°C</p>
+              <p id="conn-weather-desc" style="font-size:.76rem;color:var(--text-muted);margin:0;"></p>
+              <p id="conn-weather-wind" style="font-size:.72rem;color:var(--text-muted);margin:1px 0 0;"></p>
+            </div>
+            <div style="text-align:right;">
+              <p id="conn-weather-icon" style="font-size:1.8rem;margin:0 0 1px;"></p>
+              <p id="conn-weather-humidity" style="font-size:.72rem;color:var(--text-muted);margin:0;"></p>
+              <p id="conn-weather-rain" style="font-size:.72rem;color:var(--text-muted);margin:1px 0 0;"></p>
+            </div>
           </div>
         </div>
-        <!-- Divider -->
-        <div style="border-top:1px solid var(--border);margin:8px 0;"></div>
-        <!-- Tomorrow -->
+      </div>
+      <!-- Shimmer for today -->
+      <div id="conn-shimmer" style="background:var(--cream-dark);border-radius:10px;height:76px;animation:shimmer 1.5s ease-in-out infinite;"></div>
+    </div>
+    <!-- Field 2: tomorrow forecast — same as password field -->
+    <div class="field" id="conn-tomorrow-wrap">
+      <div id="conn-tomorrow-weather" style="display:none;background:var(--cream);border-radius:10px;padding:10px 12px;text-align:left;">
+        <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;">Tomorrow</p>
         <div style="display:flex;justify-content:space-between;align-items:center;">
           <div>
-            <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin:0 0 2px;">Tomorrow</p>
-            <p id="conn-tomorrow-temp" style="font-size:.9rem;font-weight:700;color:var(--soil);margin:0 0 2px;"></p>
-            <p id="conn-tomorrow-desc" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
+            <p id="conn-tomorrow-temp" style="font-size:1rem;font-weight:700;color:var(--soil);margin:0 0 1px;"></p>
+            <p id="conn-tomorrow-desc" style="font-size:.76rem;color:var(--text-muted);margin:0;"></p>
           </div>
           <div style="text-align:right;">
-            <p id="conn-tomorrow-icon" style="font-size:1.4rem;margin:0 0 2px;"></p>
-            <p id="conn-tomorrow-rain" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
+            <p id="conn-tomorrow-icon" style="font-size:1.4rem;margin:0 0 1px;"></p>
+            <p id="conn-tomorrow-rain" style="font-size:.72rem;color:var(--text-muted);margin:0;"></p>
           </div>
         </div>
       </div>
-      <!-- Shimmer bars while weather loads -->
-      <div id="conn-shimmer">
-        <div style="height:14px;background:var(--cream-dark);border-radius:6px;margin-bottom:10px;width:40%;margin-left:auto;margin-right:auto;animation:shimmer 1.5s ease-in-out infinite;"></div>
-        <div style="height:72px;background:var(--cream-dark);border-radius:10px;margin-bottom:14px;animation:shimmer 1.5s ease-in-out infinite;"></div>
-        <div style="height:14px;background:var(--cream-dark);border-radius:6px;margin-bottom:10px;width:40%;margin-left:auto;margin-right:auto;animation:shimmer 1.5s ease-in-out infinite;"></div>
-        <div style="height:42px;background:var(--cream-dark);border-radius:10px;animation:shimmer 1.5s ease-in-out infinite;"></div>
-      </div>
+      <!-- Shimmer for tomorrow -->
+      <div id="conn-shimmer2" style="background:var(--cream-dark);border-radius:10px;height:62px;animation:shimmer 1.5s ease-in-out infinite;"></div>
     </div>
-
-    <!-- Progress bar — same width as sign in button -->
-    <div style="width:100%;height:3px;background:var(--border);border-radius:4px;overflow:hidden;">
-      <div id="conn-progress" style="height:100%;background:var(--leaf);border-radius:4px;animation:progress 2s ease-in-out infinite;width:40%;"></div>
+    <!-- Progress bar — same size/position as Sign in button -->
+    <div style="width:100%;height:44px;border-radius:10px;background:var(--cream-dark);margin-top:8px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">
+      <p id="conn-msg" style="font-size:.82rem;color:var(--text-muted);margin:0;z-index:1;position:relative;"></p>
+      <div id="conn-progress" style="position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--leaf);animation:progress 2s ease-in-out infinite;"></div>
     </div>
-
     <!-- Error state -->
-    <div id="conn-error-box" style="display:none;margin-top:1.25rem;">
+    <div id="conn-error-box" style="display:none;margin-top:1rem;text-align:center;">
       <p style="color:var(--berry);font-size:1rem;font-weight:600;margin:0 0 8px;">Connection failed</p>
       <p id="conn-error-detail" style="color:var(--text-muted);font-size:.85rem;margin:0 0 1.25rem;line-height:1.6;"></p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
@@ -1284,6 +1277,8 @@ function showConnecting(){
   // Reset weather widget
   document.getElementById('conn-weather').style.display='none';
   document.getElementById('conn-shimmer').style.display='block';
+  document.getElementById('conn-tomorrow-weather').style.display='none';
+  document.getElementById('conn-shimmer2').style.display='block';
   fetchWeather();
 }
 function hideConnecting(){ document.getElementById('connecting-overlay').style.display='none'; }
@@ -1292,6 +1287,8 @@ function showConnectFailed(reason){
   document.getElementById('conn-msg').textContent='';
   const sk=document.getElementById('conn-skeleton');
   if(sk) sk.style.display='none';
+  const sk2=document.getElementById('conn-tomorrow-wrap');
+  if(sk2) sk2.style.display='none';
   document.getElementById('conn-error-detail').textContent=reason||'Could not reach the Google Sheet.';
   document.getElementById('conn-error-box').style.display='block';
 }
@@ -1340,7 +1337,9 @@ async function fetchWeather(){
     document.getElementById('conn-tomorrow-rain').textContent = tmrRain>0?`🌧️ ${tmrRain}mm expected`:'No rain expected';
 
     document.getElementById('conn-shimmer').style.display='none';
+    document.getElementById('conn-shimmer2').style.display='none';
     document.getElementById('conn-weather').style.display='block';
+    document.getElementById('conn-tomorrow-weather').style.display='block';
   } catch(e){
     // Fail silently
   }

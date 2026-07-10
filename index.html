@@ -26,14 +26,14 @@
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:var(--text);line-height:1.5;}
 
 /* ---- Login ---- */
-#login-screen{position:fixed;inset:0;background:var(--soil);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;}
+#login-screen{position:fixed;inset:0;background:#0d2010;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;}
 #login-screen.hidden{display:none;}
 
 /* Background pattern — subtle leaf/grid texture using CSS */
 #login-bg{position:absolute;inset:0;opacity:.07;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:28px 28px;}
 
 /* Decorative top band */
-#login-top-band{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),var(--gold),var(--leaf-dark));}
+#login-top-band{position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),#2a9d8f,var(--leaf-dark));}
 
 .login-box{
   position:relative;z-index:1;
@@ -268,7 +268,8 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 /* ---- Connecting overlay ---- */
 @keyframes spin{to{transform:rotate(360deg);}}
 #conn-spinner{width:40px;height:40px;border:4px solid var(--border);border-top-color:var(--leaf);border-radius:50%;animation:spin .9s linear infinite;}
-@keyframes pulse{0%,100%{transform:scale(1);opacity:1;}50%{transform:scale(1.15);opacity:.8;}}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 0 0 0 rgba(74,103,65,.4);}50%{transform:scale(1.08);box-shadow:0 0 0 8px rgba(74,103,65,.0);}}
+@keyframes shimmer{0%,100%{opacity:.5;}50%{opacity:1;}}
 @keyframes progress{0%{width:0%;margin-left:0;}50%{width:60%;margin-left:20%;}100%{width:0%;margin-left:100%;}}
 
 /* ---- Mobile ---- */
@@ -517,12 +518,19 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 
     <!-- Cumulative expense vs income chart -->
     <div class="card">
-      <h2 class="section-title">Cumulative expenses vs income</h2>
-      <p class="instructions" style="margin-bottom:10px;">Expenses accumulate month by month. The green line is your total income — when bars reach it, you've spent all your earnings.</p>
-      <div style="position:relative;height:220px;"><canvas id="cumulative-chart"></canvas></div>
-      <div style="display:flex;gap:16px;margin-top:10px;font-size:.75rem;color:var(--text-muted);">
-        <span><span style="display:inline-block;width:12px;height:10px;background:rgba(140,58,43,.75);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Cumulative expenses</span>
-        <span><span style="display:inline-block;width:20px;height:3px;background:var(--leaf);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Total income</span>
+      <h2 class="section-title">Monthly spend & running total vs income</h2>
+      <p class="instructions" style="margin-bottom:10px;">Bars show each month's spending. The curve shows the running total. When the curve meets the green line — you've spent all your income.</p>
+      <div style="position:relative;height:260px;"><canvas id="cumulative-chart"></canvas></div>
+      <div style="display:flex;gap:16px;margin-top:10px;font-size:.75rem;color:var(--text-muted);flex-wrap:wrap;">
+        <span><span style="display:inline-block;width:12px;height:10px;background:rgba(42,157,143,.8);border-radius:2px;margin-right:4px;vertical-align:middle;"></span>Monthly spend</span>
+        <span style="display:inline-flex;align-items:center;gap:0;">
+          <span style="display:inline-block;width:8px;height:2px;background:rgba(13,107,97,.9);vertical-align:middle;"></span>
+          <span style="display:inline-block;width:7px;height:7px;border-radius:50%;background:rgba(13,107,97,.9);vertical-align:middle;"></span>
+          <span style="display:inline-block;width:8px;height:2px;background:rgba(13,107,97,.9);vertical-align:middle;margin-right:4px;"></span>Running total
+        </span>
+        <span style="display:inline-flex;align-items:center;gap:4px;">
+          <span style="display:inline-block;width:20px;height:2px;background:#4a6741;vertical-align:middle;margin-right:4px;"></span>Total income
+        </span>
       </div>
     </div>
 
@@ -763,13 +771,6 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
       <div style="position:relative;height:280px;"><canvas id="monthly-chart" aria-label="Monthly breakdown chart"></canvas></div>
     </div>
 
-    <!-- Net profit trend -->
-    <div class="card">
-      <h2 class="section-title">Monthly net profit / loss</h2>
-      <p class="instructions" style="margin-bottom:10px;">Green = profitable month, red = loss. Shows which months the farm made or lost money.</p>
-      <div style="position:relative;height:200px;"><canvas id="net-trend-chart" aria-label="Net profit trend chart"></canvas></div>
-    </div>
-
     <!-- Purchases by category -->
     <div class="card">
       <h2 class="section-title">Purchases by category</h2>
@@ -1005,31 +1006,82 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 </div><!-- end #app -->
 
 <!-- Connecting overlay -->
-<div id="connecting-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#1a2e1a 0%,#0d1f0d 100%);z-index:200;flex-direction:column;align-items:center;justify-content:center;gap:0;padding:2rem;">
-  <!-- Brand -->
-  <div style="text-align:center;margin-bottom:2.5rem;">
-    <div id="conn-leaf" style="font-size:3rem;margin-bottom:1rem;animation:pulse 2s ease-in-out infinite;">🌿</div>
-    <div style="font-size:1.8rem;font-weight:800;letter-spacing:6px;color:#fff;margin-bottom:4px;">VAYAL</div>
-    <div style="font-size:.8rem;color:rgba(255,255,255,.45);letter-spacing:1px;">Thenery Farm & Home</div>
-  </div>
-  <!-- Greeting -->
-  <div id="conn-greeting" style="font-size:1.1rem;color:rgba(255,255,255,.85);font-weight:600;margin-bottom:6px;"></div>
-  <!-- Status message -->
-  <div id="conn-msg" style="font-size:.82rem;color:rgba(255,255,255,.45);margin-bottom:2rem;"></div>
-  <!-- Progress bar -->
-  <div style="width:180px;height:3px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;">
-    <div id="conn-progress" style="height:100%;background:var(--leaf);border-radius:4px;animation:progress 2s ease-in-out infinite;width:40%;"></div>
-  </div>
-  <!-- Error box -->
-  <div id="conn-error-box" style="display:none;text-align:center;padding:1.5rem;background:rgba(255,255,255,.08);border-radius:16px;margin-top:2rem;max-width:320px;">
-    <p style="color:#ff8a80;font-size:1rem;font-weight:600;margin:0 0 8px;">Connection failed</p>
-    <p id="conn-error-detail" style="color:rgba(255,255,255,.55);font-size:.85rem;margin:0 0 1.25rem;line-height:1.6;"></p>
-    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-      <button class="primary" id="conn-retry">Try again</button>
-      <button id="conn-fix-url" style="display:none;">Fix connection</button>
-      <button id="conn-logout" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;">Sign out</button>
+<div id="connecting-overlay" style="display:none;position:fixed;inset:0;background:#0d2010;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
+  <!-- Dot grid texture — green tinted -->
+  <div style="position:absolute;inset:0;opacity:.07;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:28px 28px;"></div>
+  <!-- Top colour band -->
+  <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),#2a9d8f,var(--leaf-dark));"></div>
+
+  <div class="login-box" style="text-align:center;min-height:420px;display:flex;flex-direction:column;justify-content:center;position:relative;z-index:1;">
+    <!-- Emblem + title + tagline + divider — same as login -->
+    <div class="login-emblem" id="conn-leaf" style="animation:pulse 1.5s ease-in-out infinite;margin-left:auto;margin-right:auto;">🌿</div>
+    <h1>VAYAL</h1>
+    <p class="login-tagline">Our Farm. Our Home. Our Records.</p>
+    <hr class="login-divider">
+
+    <!-- Greeting -->
+    <p id="conn-greeting" style="font-size:1rem;font-weight:600;color:var(--soil);margin:0 0 4px;"></p>
+    <p id="conn-msg" style="font-size:.82rem;color:var(--text-muted);margin:0 0 1.25rem;"></p>
+
+    <!-- Skeleton placeholders — mimics login form fields -->
+    <div id="conn-skeleton" style="margin-bottom:1.25rem;">
+      <!-- Weather widget -->
+      <div id="conn-weather" style="background:var(--cream);border-radius:12px;padding:12px 14px;margin-bottom:12px;text-align:left;display:none;">
+        <p style="font-size:.62rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 8px;">🌿 Thenery Farm · Meenangadi</p>
+        <!-- Today -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+          <div>
+            <p id="conn-weather-temp" style="font-size:1.6rem;font-weight:800;color:var(--soil);margin:0 0 2px;">--°C</p>
+            <p id="conn-weather-desc" style="font-size:.78rem;color:var(--text-muted);margin:0;"></p>
+            <p id="conn-weather-wind" style="font-size:.75rem;color:var(--text-muted);margin:2px 0 0;"></p>
+          </div>
+          <div style="text-align:right;">
+            <p id="conn-weather-icon" style="font-size:2rem;margin:0 0 2px;"></p>
+            <p id="conn-weather-humidity" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
+            <p id="conn-weather-rain" style="font-size:.75rem;color:var(--text-muted);margin:2px 0 0;"></p>
+          </div>
+        </div>
+        <!-- Divider -->
+        <div style="border-top:1px solid var(--border);margin:8px 0;"></div>
+        <!-- Tomorrow -->
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p style="font-size:.65rem;text-transform:uppercase;letter-spacing:.4px;color:var(--text-muted);margin:0 0 2px;">Tomorrow</p>
+            <p id="conn-tomorrow-temp" style="font-size:.9rem;font-weight:700;color:var(--soil);margin:0 0 2px;"></p>
+            <p id="conn-tomorrow-desc" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
+          </div>
+          <div style="text-align:right;">
+            <p id="conn-tomorrow-icon" style="font-size:1.4rem;margin:0 0 2px;"></p>
+            <p id="conn-tomorrow-rain" style="font-size:.75rem;color:var(--text-muted);margin:0;"></p>
+          </div>
+        </div>
+      </div>
+      <!-- Shimmer bars while weather loads -->
+      <div id="conn-shimmer">
+        <div style="height:14px;background:var(--cream-dark);border-radius:6px;margin-bottom:10px;width:40%;margin-left:auto;margin-right:auto;animation:shimmer 1.5s ease-in-out infinite;"></div>
+        <div style="height:72px;background:var(--cream-dark);border-radius:10px;margin-bottom:14px;animation:shimmer 1.5s ease-in-out infinite;"></div>
+        <div style="height:14px;background:var(--cream-dark);border-radius:6px;margin-bottom:10px;width:40%;margin-left:auto;margin-right:auto;animation:shimmer 1.5s ease-in-out infinite;"></div>
+        <div style="height:42px;background:var(--cream-dark);border-radius:10px;animation:shimmer 1.5s ease-in-out infinite;"></div>
+      </div>
+    </div>
+
+    <!-- Progress bar — same width as sign in button -->
+    <div style="width:100%;height:3px;background:var(--border);border-radius:4px;overflow:hidden;">
+      <div id="conn-progress" style="height:100%;background:var(--leaf);border-radius:4px;animation:progress 2s ease-in-out infinite;width:40%;"></div>
+    </div>
+
+    <!-- Error state -->
+    <div id="conn-error-box" style="display:none;margin-top:1.25rem;">
+      <p style="color:var(--berry);font-size:1rem;font-weight:600;margin:0 0 8px;">Connection failed</p>
+      <p id="conn-error-detail" style="color:var(--text-muted);font-size:.85rem;margin:0 0 1.25rem;line-height:1.6;"></p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="primary" id="conn-retry">Try again</button>
+        <button id="conn-fix-url" style="display:none;">Fix connection</button>
+        <button id="conn-logout">Sign out</button>
+      </div>
     </div>
   </div>
+  <p class="login-footer" style="margin-top:1.5rem;position:relative;z-index:1;">VAYAL v2.0 &nbsp;·&nbsp; © 2026 Arjun Thenery Manikantan</p>
 </div>
 
 <script>
@@ -1043,7 +1095,7 @@ const STORAGE_TOKEN_KEY = 'vayalToken';
 // ===================== STATE =====================
 let entries = [], crops = ['Coffee'], sheetUsers = [], currentUser = null, pendingSheetData = null;
 let currentTab = 'summary';
-let monthlyChart=null, categoryChart=null, incomeCropChart=null, netTrendChart=null;
+let monthlyChart=null, categoryChart=null, incomeCropChart=null;
 let monthlyChartType='bar';
 let scriptUrl = localStorage.getItem(STORAGE_URL_KEY) || '';
 let scriptToken = localStorage.getItem(STORAGE_TOKEN_KEY) || '';
@@ -1229,11 +1281,17 @@ function showConnecting(){
   const name=currentUser?currentUser.name:'';
   document.getElementById('conn-greeting').textContent=name?`${getGreeting()}, ${name} 👋`:`${getGreeting()} 👋`;
   document.getElementById('conn-msg').textContent='Connecting to your records...';
+  // Reset weather widget
+  document.getElementById('conn-weather').style.display='none';
+  document.getElementById('conn-shimmer').style.display='block';
+  fetchWeather();
 }
 function hideConnecting(){ document.getElementById('connecting-overlay').style.display='none'; }
 function showConnectFailed(reason){
   document.getElementById('conn-greeting').textContent='Connection failed';
   document.getElementById('conn-msg').textContent='';
+  const sk=document.getElementById('conn-skeleton');
+  if(sk) sk.style.display='none';
   document.getElementById('conn-error-detail').textContent=reason||'Could not reach the Google Sheet.';
   document.getElementById('conn-error-box').style.display='block';
 }
@@ -1241,7 +1299,52 @@ document.getElementById('conn-retry').addEventListener('click',()=>{ showConnect
 document.getElementById('conn-fix-url').addEventListener('click',()=>{ hideConnecting(); openSettings(); });
 document.getElementById('conn-logout').addEventListener('click', doLogout);
 
-// ===================== SETUP SCREEN =====================
+// ===================== WEATHER =====================
+async function fetchWeather(){
+  try {
+    const res = await fetch('https://api.open-meteo.com/v1/forecast?latitude=11.640968&longitude=76.154776&current=temperature_2m,relative_humidity_2m,weather_code,precipitation,wind_speed_10m&daily=weather_code,precipitation_sum,temperature_2m_max,temperature_2m_min&timezone=Asia%2FKolkata&forecast_days=2');
+    const data = await res.json();
+    const c = data.current;
+    const d = data.daily;
+
+    function weatherInfo(code){
+      if(code===0) return {desc:'Clear sky',icon:'☀️'};
+      if(code<=2) return {desc:'Partly cloudy',icon:'⛅'};
+      if(code===3) return {desc:'Overcast',icon:'☁️'};
+      if(code<=49) return {desc:'Foggy',icon:'🌫️'};
+      if(code<=59) return {desc:'Drizzle',icon:'🌦️'};
+      if(code<=69) return {desc:'Rain',icon:'🌧️'};
+      if(code<=79) return {desc:'Snow',icon:'❄️'};
+      if(code<=82) return {desc:'Rain showers',icon:'🌧️'};
+      if(code<=99) return {desc:'Thunderstorm',icon:'⛈️'};
+      return {desc:'--',icon:'🌡️'};
+    }
+
+    // Today
+    const today = weatherInfo(c.weather_code);
+    document.getElementById('conn-weather-temp').textContent = `${Math.round(c.temperature_2m)}°C`;
+    document.getElementById('conn-weather-desc').textContent = today.desc;
+    document.getElementById('conn-weather-icon').textContent = today.icon;
+    document.getElementById('conn-weather-humidity').textContent = `💧 ${c.relative_humidity_2m}%`;
+    document.getElementById('conn-weather-rain').textContent = c.precipitation>0?`🌧️ ${c.precipitation}mm`:'';
+    document.getElementById('conn-weather-wind').textContent = `💨 ${Math.round(c.wind_speed_10m)} km/h`;
+
+    // Tomorrow
+    const tmr = weatherInfo(d.weather_code[1]);
+    const tmrMax = Math.round(d.temperature_2m_max[1]);
+    const tmrMin = Math.round(d.temperature_2m_min[1]);
+    const tmrRain = d.precipitation_sum[1];
+    document.getElementById('conn-tomorrow-temp').textContent = `${tmrMax}° / ${tmrMin}°C`;
+    document.getElementById('conn-tomorrow-desc').textContent = tmr.desc;
+    document.getElementById('conn-tomorrow-icon').textContent = tmr.icon;
+    document.getElementById('conn-tomorrow-rain').textContent = tmrRain>0?`🌧️ ${tmrRain}mm expected`:'No rain expected';
+
+    document.getElementById('conn-shimmer').style.display='none';
+    document.getElementById('conn-weather').style.display='block';
+  } catch(e){
+    // Fail silently
+  }
+}
 function showSetupScreen(){
   document.getElementById('setup-screen').style.display='flex';
   document.getElementById('app').style.display='block';
@@ -1703,26 +1806,32 @@ function renderSummary(){
   let cum=0;
   const cumData=mExp.map(v=>{ cum+=v; return Math.round(cum*100)/100; });
   const incLine=new Array(12).fill(Math.round(incTotal*100)/100);
-  // Only show months up to current month if filtering current year
-  const now=new Date(), curYear=String(now.getFullYear()), maxM=yr===curYear?now.getMonth():11;
-  const labels=mn.slice(0,maxM+1);
-  const cumSlice=cumData.slice(0,maxM+1);
-  const incSlice=incLine.slice(0,maxM+1);
+  const now=new Date(), curYear=String(now.getFullYear()), maxM=11;
+  const labels=mn;
+  const cumSlice=cumData;
+  const mExpSlice=mExp.map(v=>Math.round(v*100)/100);
+  const incSlice=incLine;
   const fmtTick=v=>'₹'+Number(v).toLocaleString('en-IN');
   if(cumulativeChart) cumulativeChart.destroy();
   cumulativeChart=new Chart(document.getElementById('cumulative-chart'),{
     data:{
       labels,
       datasets:[
-        {type:'bar',label:'Cumulative expenses',data:cumSlice,
-          backgroundColor:cumSlice.map((v,i)=>v>incSlice[i]?'rgba(140,58,43,.85)':'rgba(140,58,43,.65)'),
+        {type:'bar',label:'Monthly spend',data:mExpSlice,
+          backgroundColor:'rgba(42,157,143,.8)',
           borderRadius:4,order:2},
+        {type:'line',label:'Running total',data:cumSlice,
+          borderColor:'rgba(13,107,97,.9)',borderWidth:2.5,
+          backgroundColor:'rgba(42,157,143,.08)',
+          fill:true,tension:0.4,
+          pointRadius:3,pointBackgroundColor:'rgba(13,107,97,.8)',order:1},
         {type:'line',label:'Total income',data:incSlice,
-          borderColor:'#4a6741',borderWidth:2.5,borderDash:[6,3],
-          pointRadius:0,pointHoverRadius:0,fill:false,tension:0,order:1}
+          borderColor:'#4a6741',borderWidth:2.5,borderDash:[],
+          pointRadius:0,pointHoverRadius:0,fill:false,tension:0,order:0}
       ]
     },
     options:{
+      grouped:false,
       responsive:true,maintainAspectRatio:false,
       scales:{
         x:{ticks:{autoSkip:false,maxRotation:0,font:{size:11}}},
@@ -1731,7 +1840,11 @@ function renderSummary(){
       plugins:{
         legend:{display:false},
         tooltip:{callbacks:{
-          label:ctx=>ctx.dataset.label===('Total income')?`Income: ${fmt(ctx.parsed.y)}`:`Cumulative: ${fmt(ctx.parsed.y)}`
+          label:ctx=>{
+            if(ctx.dataset.label==='Total income') return `Income: ${fmt(ctx.parsed.y)}`;
+            if(ctx.dataset.label==='Running total') return `Running total: ${fmt(ctx.parsed.y)}`;
+            return `This month: ${fmt(ctx.parsed.y)}`;
+          }
         }}
       }
     }
@@ -1965,35 +2078,22 @@ function renderAnalytics(){
     }
   });
 
-  // ---- Net profit/loss per month (green/red bars) ----
-  const mNet=mn.map((_,i)=>r2(mInc[i]-mExp[i]-mWag[i]));
-  if(netTrendChart)netTrendChart.destroy();
-  netTrendChart=new Chart(document.getElementById('net-trend-chart'),{
-    type:'bar',
-    data:{labels:mn,datasets:[{
-      label:'Net',data:mNet,
-      backgroundColor:mNet.map(v=>v>=0?'rgba(74,103,65,.85)':'rgba(140,58,43,.85)'),
-      borderRadius:4
-    }]},
-    options:{responsive:true,maintainAspectRatio:false,
-      scales:{x:{ticks:{autoSkip:false,maxRotation:0}},y:{ticks:{callback:fmtTick}}},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`Net: ${fmt(ctx.parsed.y)}`}}}
-    }
-  });
-
   // ---- Purchases by category (horizontal) ----
   const catTot={};
   ye.filter(e=>e.type==='expense').forEach(e=>{catTot[e.category]=(catTot[e.category]||0)+e.amount;});
   const catL=Object.keys(catTot).sort((a,b)=>catTot[b]-catTot[a]),catV=catL.map(k=>r2(catTot[k]));
-  const catH=Math.max(160,catL.length*44+60);
-  document.getElementById('category-chart-wrap').style.height=catH+'px';
+  const catH=Math.max(260,catL.length*55+80);
+  document.getElementById('category-chart-wrap').style.height='280px';
   if(categoryChart)categoryChart.destroy();
   categoryChart=new Chart(document.getElementById('category-chart'),{
     type:'bar',
     data:{labels:catL.length?catL:['No purchases'],datasets:[{data:catL.length?catV:[0],backgroundColor:'#6b5544',borderRadius:4}]},
-    options:{indexAxis:'y',responsive:true,maintainAspectRatio:false,
-      scales:{x:{beginAtZero:true,ticks:{callback:fmtTick}}},
-      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.x)}`}}}
+    options:{responsive:true,maintainAspectRatio:false,
+      scales:{
+        x:{ticks:{maxRotation:35,font:{size:10}}},
+        y:{beginAtZero:true,ticks:{callback:fmtTick}}
+      },
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>`${fmt(ctx.parsed.y)}`}}}
     }
   });
 

@@ -26,7 +26,7 @@
 body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--cream);color:var(--text);line-height:1.5;}
 
 /* ---- Login ---- */
-#login-screen{position:fixed;inset:0;background:#0d2010;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;}
+#login-screen{position:fixed;inset:0;background:linear-gradient(160deg,#1a3a1f 0%,#0d2010 100%);display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:1000;overflow:hidden;}
 #login-screen.hidden{display:none;}
 
 /* Background pattern — subtle leaf/grid texture using CSS */
@@ -737,6 +737,10 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
         </select>
       </div>
     </div>
+    <div class="field" style="margin-bottom:10px;">
+      <input type="text" id="log-search" placeholder="Search entries e.g. fertilizer, Raju, JCB..." autocomplete="off">
+    </div>
+    <div id="log-search-summary" style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px;display:none;"></div>
     <div class="card"><div class="row-table" id="log-list"></div></div>
   </div>
 
@@ -870,6 +874,10 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
           </select>
         </div>
       </div>
+      <div class="field" style="margin-bottom:10px;">
+        <input type="text" id="home-log-search" placeholder="Search e.g. groceries, EMI, car..." autocomplete="off">
+      </div>
+      <div id="home-log-search-summary" style="font-size:.78rem;color:var(--text-muted);margin-bottom:8px;display:none;"></div>
       <div class="card"><div class="row-table" id="home-log-list"></div></div>
     </div>
 
@@ -1006,57 +1014,64 @@ code{background:var(--cream-dark);padding:2px 6px;border-radius:4px;font-family:
 </div><!-- end #app -->
 
 <!-- Connecting overlay -->
-<div id="connecting-overlay" style="display:none;position:fixed;inset:0;background:#0d2010;z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:2rem;">
-  <!-- Dot grid texture — green tinted -->
+<div id="connecting-overlay" style="display:none;position:fixed;inset:0;background:linear-gradient(160deg,#1a3a1f 0%,#0d2010 100%);z-index:200;flex-direction:column;align-items:center;justify-content:center;padding:2.5rem;text-align:center;">
+  <!-- Dot grid texture -->
   <div style="position:absolute;inset:0;opacity:.07;background-image:radial-gradient(circle,#fff 1px,transparent 1px);background-size:28px 28px;"></div>
   <!-- Top colour band -->
   <div style="position:absolute;top:0;left:0;right:0;height:6px;background:linear-gradient(90deg,var(--leaf),#2a9d8f,var(--leaf-dark));"></div>
 
-  <div class="login-box" style="position:relative;z-index:1;">
-    <div class="login-emblem" id="conn-leaf" style="animation:pulse 1.5s ease-in-out infinite;margin-left:auto;margin-right:auto;">🌿</div>
-    <h1 style="text-align:center;">VAYAL</h1>
-    <p class="login-tagline">Our Farm. Our Home. Our Records.</p>
-    <hr class="login-divider">
-    <p class="sub" id="conn-greeting" style="text-align:center;"></p>
-    <!-- Field 1: weather today — same as name field -->
-    <div class="field" id="conn-skeleton">
-      <div id="conn-weather" style="display:none;width:100%;">
-        <div style="background:var(--cream);border-radius:10px;padding:10px 12px;text-align:left;width:100%;box-sizing:border-box;border:1px solid var(--border);">
-          <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.5px;color:var(--text-muted);margin:0 0 6px;">🌿 Thenery Farm · Meenangadi</p>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <div>
-              <p id="conn-weather-temp" style="font-size:1.4rem;font-weight:800;color:var(--soil);margin:0 0 1px;">--°C</p>
-              <p id="conn-weather-desc" style="font-size:.76rem;color:var(--text-muted);margin:0;"></p>
-              <p id="conn-weather-wind" style="font-size:.72rem;color:var(--text-muted);margin:1px 0 0;"></p>
-            </div>
-            <div style="text-align:right;">
-              <p id="conn-weather-icon" style="font-size:1.8rem;margin:0 0 1px;"></p>
-              <p id="conn-weather-humidity" style="font-size:.72rem;color:var(--text-muted);margin:0;"></p>
-              <p id="conn-weather-rain" style="font-size:.72rem;color:var(--text-muted);margin:1px 0 0;"></p>
-            </div>
+  <div style="position:relative;z-index:1;width:100%;max-width:360px;">
+    <!-- Emblem -->
+    <div class="login-emblem" id="conn-leaf" style="animation:pulse 1.5s ease-in-out infinite;margin:0 auto 1rem;">🌿</div>
+    <!-- Title -->
+    <h1 style="margin:0 0 4px;font-size:2rem;font-weight:800;letter-spacing:6px;color:#fff;">VAYAL</h1>
+    <p style="font-size:.8rem;color:rgba(255,255,255,.5);margin:0 0 1.5rem;letter-spacing:.5px;">Our Farm. Our Home. Our Records.</p>
+
+    <!-- Greeting -->
+    <p id="conn-greeting" style="font-size:1.05rem;font-weight:600;color:rgba(255,255,255,.9);margin:0 0 4px;"></p>
+    <p id="conn-msg" style="font-size:.8rem;color:rgba(255,255,255,.45);margin:0 0 1.5rem;"></p>
+
+    <!-- Weather card — floating on dark background -->
+    <div id="conn-skeleton" style="margin-bottom:1.5rem;">
+      <div id="conn-weather" style="display:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.12);border-radius:16px;padding:14px 16px;text-align:left;">
+        <p style="font-size:.6rem;text-transform:uppercase;letter-spacing:.6px;color:rgba(255,255,255,.4);margin:0 0 8px;">🌿 Thenery Farm · Meenangadi</p>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div>
+            <p id="conn-weather-temp" style="font-size:2rem;font-weight:800;color:#fff;margin:0 0 2px;">--°C</p>
+            <p id="conn-weather-desc" style="font-size:.8rem;color:rgba(255,255,255,.6);margin:0;"></p>
+            <p id="conn-weather-wind" style="font-size:.75rem;color:rgba(255,255,255,.45);margin:3px 0 0;"></p>
+          </div>
+          <div style="text-align:right;">
+            <p id="conn-weather-icon" style="font-size:2.5rem;margin:0 0 4px;"></p>
+            <p id="conn-weather-humidity" style="font-size:.75rem;color:rgba(255,255,255,.5);margin:0;"></p>
+            <p id="conn-weather-rain" style="font-size:.75rem;color:rgba(255,255,255,.5);margin:3px 0 0;"></p>
           </div>
         </div>
       </div>
-      <!-- Shimmer for today -->
-      <div id="conn-shimmer" style="background:var(--cream-dark);border-radius:10px;height:76px;animation:shimmer 1.5s ease-in-out infinite;width:100%;"></div>
+      <!-- Shimmer -->
+      <div id="conn-shimmer" style="background:rgba(255,255,255,.08);border-radius:16px;height:90px;animation:shimmer 1.5s ease-in-out infinite;"></div>
     </div>
-    <!-- Progress bar — same size/position as Sign in button -->
-    <div style="width:100%;height:44px;border-radius:10px;background:var(--cream-dark);margin-top:8px;overflow:hidden;position:relative;display:flex;align-items:center;justify-content:center;">
-      <p id="conn-msg" style="font-size:.82rem;color:var(--text-muted);margin:0;z-index:1;position:relative;"></p>
-      <div id="conn-progress" style="position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--leaf);animation:progress 2s ease-in-out infinite;"></div>
+
+    <!-- Progress bar -->
+    <div style="width:100%;height:3px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;">
+      <div id="conn-progress" style="height:100%;background:var(--leaf);border-radius:4px;animation:progress 2s ease-in-out infinite;"></div>
     </div>
-    <!-- Error state -->
-    <div id="conn-error-box" style="display:none;margin-top:1rem;text-align:center;">
-      <p style="color:var(--berry);font-size:1rem;font-weight:600;margin:0 0 8px;">Connection failed</p>
-      <p id="conn-error-detail" style="color:var(--text-muted);font-size:.85rem;margin:0 0 1.25rem;line-height:1.6;"></p>
+
+    <!-- Error state — shown in place of weather card -->
+    <div id="conn-error-box" style="display:none;background:rgba(200,50,50,.15);border:1px solid rgba(255,100,100,.25);border-radius:16px;padding:20px;text-align:center;margin-bottom:1.5rem;">
+      <p style="font-size:1.4rem;margin:0 0 8px;">❌</p>
+      <p style="color:#ff8a80;font-size:.95rem;font-weight:600;margin:0 0 6px;">Connection failed</p>
+      <p id="conn-error-detail" style="color:rgba(255,255,255,.55);font-size:.82rem;margin:0 0 1.25rem;line-height:1.5;"></p>
       <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
         <button class="primary" id="conn-retry">Try again</button>
-        <button id="conn-fix-url" style="display:none;">Fix connection</button>
-        <button id="conn-logout">Sign out</button>
+        <button id="conn-fix-url" style="display:none;background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;">Fix connection</button>
+        <button id="conn-logout" style="background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.2);color:#fff;">Sign out</button>
       </div>
     </div>
   </div>
-  <p class="login-footer" style="margin-top:1.5rem;position:relative;z-index:1;">VAYAL v2.0 &nbsp;·&nbsp; © 2026 Arjun Thenery Manikantan</p>
+
+  <!-- Footer -->
+  <p style="position:absolute;bottom:1.5rem;font-size:.7rem;color:rgba(255,255,255,.25);letter-spacing:.3px;">VAYAL v2.0 &nbsp;·&nbsp; © 2026 Arjun Thenery Manikantan</p>
 </div>
 
 <script>
@@ -1256,22 +1271,58 @@ function showConnecting(){
   const name=currentUser?currentUser.name:'';
   document.getElementById('conn-greeting').textContent=name?`${getGreeting()}, ${name} 👋`:`${getGreeting()} 👋`;
   document.getElementById('conn-msg').textContent='Connecting to your records...';
+  document.getElementById('conn-error-box').style.display='none';
   // Reset weather widget
   document.getElementById('conn-weather').style.display='none';
   document.getElementById('conn-shimmer').style.display='block';
+  document.getElementById('conn-skeleton').style.display='block';
   fetchWeather();
 }
-function hideConnecting(){ document.getElementById('connecting-overlay').style.display='none'; }
+function hideConnecting(){
+  if(retryCountdown){ clearInterval(retryCountdown); retryCountdown=null; }
+  document.getElementById('connecting-overlay').style.display='none';
+}
+let retryCountdown=null;
 function showConnectFailed(reason){
-  document.getElementById('conn-greeting').textContent='Connection failed';
+  document.getElementById('conn-greeting').textContent='';
   document.getElementById('conn-msg').textContent='';
   const sk=document.getElementById('conn-skeleton');
   if(sk) sk.style.display='none';
-  if(sk2) sk2.style.display='none';
-  document.getElementById('conn-error-detail').textContent=reason||'Could not reach the Google Sheet.';
+
+  // Smart error message based on reason
+  let userMsg='Check your internet connection and try again.';
+  if(reason&&reason.includes('URL')) userMsg='No Apps Script URL configured. Ask Arjun to set up the connection.';
+  else if(reason&&reason.includes('token')||reason&&reason.includes('Unauthorised')) userMsg='Authentication failed. Check your secret token in Settings.';
+  else if(reason&&reason.includes('setup')||reason&&reason.includes('not set up')) userMsg='This device is not set up yet. Ask Arjun to configure it.';
+  else if(!navigator.onLine) userMsg='You appear to be offline. Check your internet connection.';
+
+  document.getElementById('conn-error-detail').textContent=userMsg;
   document.getElementById('conn-error-box').style.display='block';
+
+  // Auto retry countdown (only if online)
+  if(navigator.onLine&&!reason?.includes('URL')&&!reason?.includes('setup')){
+    let secs=5;
+    const retryBtn=document.getElementById('conn-retry');
+    if(retryCountdown) clearInterval(retryCountdown);
+    retryBtn.textContent=`Retrying in ${secs}s`;
+    retryCountdown=setInterval(()=>{
+      secs--;
+      if(secs>0){
+        retryBtn.textContent=`Retrying in ${secs}s`;
+      } else {
+        clearInterval(retryCountdown);
+        retryBtn.textContent='Try again';
+        showConnecting();
+        loadFromSheet();
+      }
+    },1000);
+  }
 }
-document.getElementById('conn-retry').addEventListener('click',()=>{ showConnecting(); loadFromSheet(); });
+document.getElementById('conn-retry').addEventListener('click',()=>{
+  if(retryCountdown){ clearInterval(retryCountdown); retryCountdown=null; }
+  document.getElementById('conn-retry').textContent='Try again';
+  showConnecting(); loadFromSheet();
+});
 document.getElementById('conn-fix-url').addEventListener('click',()=>{ hideConnecting(); openSettings(); });
 document.getElementById('conn-logout').addEventListener('click', doLogout);
 
@@ -1740,6 +1791,7 @@ document.getElementById('crop-filter').addEventListener('change',renderSummary);
 document.getElementById('log-filter').addEventListener('change',renderLog);
 document.getElementById('log-crop-filter').addEventListener('change',renderLog);
 document.getElementById('log-limit').addEventListener('change',renderLog);
+document.getElementById('log-search').addEventListener('input',renderLog);
 document.getElementById('year-filter').addEventListener('change',renderAnalytics);
 document.getElementById('analytics-crop-filter').addEventListener('change',renderAnalytics);
 
@@ -1959,10 +2011,28 @@ document.getElementById('letter-popup').addEventListener('click',e=>{ if(e.targe
 function renderLog(){
   const fv=document.getElementById('log-filter').value, cv=document.getElementById('log-crop-filter').value;
   const limit=document.getElementById('log-limit').value;
+  const search=document.getElementById('log-search').value.trim().toLowerCase();
   const getTs=id=>parseInt(id.replace(/^[a-z]+/,''))||0;
   let list=entries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||'')||getTs(b.id)-getTs(a.id));
   if(fv!=='all') list=list.filter(e=>e.type===fv);
   if(cv!=='all') list=list.filter(e=>e.crop===cv);
+  if(search) list=list.filter(e=>
+    (e.desc||'').toLowerCase().includes(search)||
+    (e.category||'').toLowerCase().includes(search)||
+    (e.name||'').toLowerCase().includes(search)||
+    (e.task||'').toLowerCase().includes(search)||
+    (e.crop||'').toLowerCase().includes(search)||
+    (e.buyer||'').toLowerCase().includes(search)
+  );
+  // Search summary
+  const summaryEl=document.getElementById('log-search-summary');
+  if(search){
+    const total=list.reduce((s,e)=>s+e.amount,0);
+    summaryEl.textContent=`${list.length} entries found · Total: ${fmt(total)}`;
+    summaryEl.style.display='block';
+  } else {
+    summaryEl.style.display='none';
+  }
   if(limit!=='all') list=list.slice(0,parseInt(limit));
   if(!list.length){ document.getElementById('log-list').innerHTML='<p class="empty-state">No entries to show</p>'; return; }
   const isAdmin=currentUser&&currentUser.role==='admin';
@@ -2487,8 +2557,21 @@ function monthLabelHome(m){ const[y,mo]=m.split('-'); return new Date(+y,+mo-1).
 function renderHomeLog(){
   const fv=document.getElementById('home-log-filter').value;
   const limit=document.getElementById('home-log-limit').value;
+  const search=document.getElementById('home-log-search').value.trim().toLowerCase();
   let list=homeEntries.slice().sort((a,b)=>(b.date||'').localeCompare(a.date||''));
   if(fv!=='all') list=list.filter(e=>e.category===fv);
+  if(search) list=list.filter(e=>
+    (e.category||'').toLowerCase().includes(search)||
+    (e.desc||'').toLowerCase().includes(search)
+  );
+  const summaryEl=document.getElementById('home-log-search-summary');
+  if(search){
+    const total=list.reduce((s,e)=>s+e.amount,0);
+    summaryEl.textContent=`${list.length} entries found · Total: ${fmt(total)}`;
+    summaryEl.style.display='block';
+  } else {
+    summaryEl.style.display='none';
+  }
   if(limit!=='all') list=list.slice(0,parseInt(limit));
   const isAdmin=currentUser&&currentUser.role==='admin';
   document.getElementById('home-log-list').innerHTML=list.length
@@ -2515,6 +2598,7 @@ document.getElementById('home-month-filter').addEventListener('change',renderHom
 document.getElementById('home-year-filter').addEventListener('change',renderHomeSummary);
 document.getElementById('home-log-filter').addEventListener('change',renderHomeLog);
 document.getElementById('home-log-limit').addEventListener('change',renderHomeLog);
+document.getElementById('home-log-search').addEventListener('input',renderHomeLog);
 
 document.getElementById('save-home-expense').addEventListener('click',async()=>{
   const date=document.getElementById('home-exp-date').value;
